@@ -3,529 +3,967 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>⚡️ Neo's Twitter Digest</title>
+    <title>⚡️ Daily Intelligence Digest</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
-            color: #e8e8e8;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
             min-height: 100vh;
+            color: #e0e0e0;
             overflow: hidden;
         }
-        .header {
-            text-align: center;
-            padding: 16px;
-            background: rgba(0,0,0,0.3);
-        }
-        .header h1 { font-size: 1.3em; color: #4a90d9; }
-        .header .count { color: #888; font-size: 0.85em; margin-top: 4px; }
         
-        .card-container {
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .progress {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 70px 15px 80px;
+        }
+        
+        .card-stack {
             position: relative;
             width: 100%;
-            height: calc(100vh - 160px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
+            max-width: 420px;
+            height: calc(100vh - 150px);
+            max-height: 700px;
         }
         
         .card {
             position: absolute;
-            width: calc(100% - 32px);
-            max-width: 380px;
-            background: linear-gradient(145deg, #1e1e2f, #252538);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1e1e2e, #252540);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            overflow: hidden;
             cursor: grab;
-            user-select: none;
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
             transition: transform 0.3s ease, opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
-        .card:active { cursor: grabbing; }
-        .card.dragging { transition: none; }
         
-        /* Only show top 3 cards */
-        .card[data-index="0"] { 
-            z-index: 30; 
-            transform: translate(-50%, -50%);
-            opacity: 1;
+        .card.dragging {
+            cursor: grabbing;
+            transition: none;
         }
-        .card[data-index="1"] { 
-            z-index: 20; 
-            transform: translate(-50%, -50%) scale(0.95) translateY(10px);
-            opacity: 0.6;
-        }
-        .card[data-index="2"] { 
-            z-index: 10; 
-            transform: translate(-50%, -50%) scale(0.9) translateY(20px);
-            opacity: 0.3;
-        }
-        .card[data-index="3"],
-        .card[data-index="4"],
-        .card[data-index="5"] { 
+        
+        .card.hidden {
             display: none;
         }
         
-        .author {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            gap: 10px;
-        }
-        .author-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4a90d9, #f0a500);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2em;
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             flex-shrink: 0;
         }
-        .author-info { flex: 1; min-width: 0; }
-        .author-name { font-weight: 600; color: #fff; font-size: 1em; }
-        .author-handle { color: #888; font-size: 0.85em; }
         
-        .tweet-time {
-            color: #4a90d9;
-            font-size: 0.8em;
-            margin-bottom: 12px;
-            font-weight: 500;
-        }
-        
-        .tweet-text {
-            font-size: 1em;
-            line-height: 1.5;
-            margin-bottom: 16px;
-            word-wrap: break-word;
-        }
-        
-        .tweet-media {
+        .card-category {
+            display: inline-block;
+            padding: 4px 10px;
             border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-        .tweet-media img {
-            width: 100%;
-            max-height: 200px;
-            object-fit: cover;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
         
-        .stats {
-            display: flex;
-            gap: 16px;
-            color: #888;
-            font-size: 0.85em;
-            padding-top: 12px;
-            border-top: 1px solid #333;
-        }
-        .stats span { display: flex; align-items: center; gap: 4px; }
+        .cat-ai { background: linear-gradient(90deg, #7c3aed, #a855f7); color: white; }
+        .cat-bitcoin { background: linear-gradient(90deg, #f7931a, #ffab40); color: #1a1a1a; }
+        .cat-tech { background: linear-gradient(90deg, #00d4ff, #0ea5e9); color: #1a1a1a; }
+        .cat-markets { background: linear-gradient(90deg, #10b981, #34d399); color: #1a1a1a; }
+        .cat-business { background: linear-gradient(90deg, #f43f5e, #fb7185); color: white; }
+        .cat-twitter { background: linear-gradient(90deg, #1d9bf0, #60a5fa); color: white; }
         
-        .view-tweet {
-            display: block;
-            text-align: center;
-            margin-top: 16px;
-            padding: 12px;
-            background: rgba(74, 144, 217, 0.2);
-            border-radius: 8px;
-            color: #4a90d9;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .controls {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 60px;
-            padding: 20px;
-            background: rgba(0,0,0,0.8);
-        }
-        .control-btn {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            border: 3px solid;
-            background: transparent;
-            font-size: 1.8em;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .control-btn.left {
-            border-color: #f39c12;
-            color: #f39c12;
-        }
-        .control-btn.left:active {
-            background: #f39c12;
-            color: #000;
-        }
-        .control-btn.right {
-            border-color: #27ae60;
-            color: #27ae60;
-        }
-        .control-btn.right:active {
-            background: #27ae60;
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 12px;
             color: #fff;
         }
         
-        .done-message {
-            text-align: center;
-            padding: 40px 20px;
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #888;
         }
-        .done-message h2 { color: #27ae60; margin-bottom: 16px; font-size: 1.5em; }
-        .done-message p { color: #888; }
-
-        .swipe-hint {
+        
+        .card-source {
+            font-weight: 600;
+            color: #00d4ff;
+        }
+        
+        .card-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .card-summary {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #c0c0c0;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card-full-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #a0a0a0;
+        }
+        
+        .card-full-text p {
+            margin-bottom: 16px;
+        }
+        
+        .card-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 10px;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .swipe-indicator {
             position: absolute;
-            top: 10px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.9em;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: 700;
             opacity: 0;
             transition: opacity 0.2s;
             pointer-events: none;
         }
-        .swipe-hint.later {
-            left: 10px;
-            background: #f39c12;
-            color: #000;
+        
+        .swipe-left {
+            left: 20px;
+            background: rgba(245, 158, 11, 0.9);
+            color: #1a1a1a;
         }
-        .swipe-hint.done {
-            right: 10px;
-            background: #27ae60;
-            color: #fff;
+        
+        .swipe-right {
+            right: 20px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-save {
+            background: linear-gradient(145deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-dismiss {
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .empty-state h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .empty-state p {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .saved-section {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .saved-section h3 {
+            font-size: 16px;
+            color: #f59e0b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .saved-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .saved-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .saved-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        
+        .keyboard-hint {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #666;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+        
+        @media (max-width: 480px) {
+            .card-title {
+                font-size: 18px;
+            }
+            .card-summary {
+                font-size: 15px;
+            }
+            .keyboard-hint {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>⚡️ Neo's Twitter Digest</h1>
-        <div class="count"><span id="remaining">0</span> tweets • Jan 28, 2026</div>
+        <h1>⚡️ Daily Intel</h1>
+        <div class="progress"><span id="current">1</span>/<span id="total">30</span></div>
     </div>
     
-    <div class="card-container" id="card-container"></div>
-    
-    <div class="controls">
-        <button class="control-btn left" onclick="swipeLeft()">↩️</button>
-        <button class="control-btn right" onclick="swipeRight()">✓</button>
+    <div class="container">
+        <div class="card-stack" id="cardStack"></div>
     </div>
-
+    
+    <div class="footer">
+        <button class="action-btn btn-save" onclick="saveCard()" title="Save for later (←)">📌</button>
+        <button class="action-btn btn-dismiss" onclick="dismissCard()" title="Dismiss (→)">✕</button>
+    </div>
+    
+    <div class="keyboard-hint">← Save · Scroll to read · Dismiss →</div>
+    
     <script>
-        const tweets = [
+        const newsItems = [
             {
-                id: "2016668920678134145",
-                author: "Chris",
-                handle: "@chatgpt21",
-                text: "🚨 Tesla Roadster Unveil Coming in April!\n\nI listened to the entire Q4 2025 Earnings Call:\n\n• Roadster: Unveiling April 2026\n• Model S & X: Production stopping Q2\n• Optimus: 1M robots/year line\n• Robotaxi: 500+ units, no chase cars!\n• Cybercab: NO steering wheel\n• $20B+ capex in 2026",
-                time: "Jan 28 • 4:25 PM",
-                replies: 0, retweets: 0, likes: 3,
-                hasMedia: true,
-                mediaUrl: "https://pbs.twimg.com/media/G_ylr6kbUAUhyX-.jpg",
-                url: "https://twitter.com/chatgpt21/status/2016668920678134145"
+                id: 1,
+                category: 'ai',
+                title: 'Chinese AI Race Heats Up: Alibaba, Moonshot, Baidu Release New Models',
+                source: 'CNBC',
+                time: 'Jan 28, 2026',
+                summary: 'Chinese companies are accelerating AI model rollouts. Moonshot AI\'s Kimi K2.5 claims to outperform OpenAI, Anthropic, and Google. Alibaba\'s Qwen3-Max-Thinking beat U.S. rivals on "Humanity\'s Last Exam" benchmark.',
+                fullText: `<p>Chinese companies are accelerating the rollout of new artificial intelligence models as competition with U.S.-based rivals OpenAI, Anthropic and Google intensifies.</p>
+                <p>Just over a year ago, China-made DeepSeek rocked global markets with the release of an AI chatbot that undercut OpenAI's ChatGPT on usage fees and production costs, raising questions about the efficacy of U.S. tech restrictions on China.</p>
+                <p>On Tuesday, Beijing-based startup Moonshot AI revealed Kimi K2.5, which claimed to have video-generation and agentic capabilities that outperformed all three of the leading U.S. AI models. Agentic AI broadly refers to AI systems capable of carrying out tasks on behalf of people.</p>
+                <p>Hours earlier, e-commerce giant Alibaba announced its latest generative AI model. Alibaba claimed its Qwen3-Max-Thinking outperformed major U.S. rivals on a broad benchmark test called "Humanity's Last Exam."</p>
+                <p>Alibaba said the new model can automatically select the best AI tool for a range of tasks and draw on past conversations as context to generate new responses more efficiently.</p>
+                <p>Also last week, Hong Kong-traded shares of Chinese tech giant Baidu climbed to their highest level in nearly three years following the release of its latest generative AI model, Ernie 5.0.</p>
+                <p>Demis Hassabis, the CEO of Google DeepMind, told CNBC this month that China's AI models may be just "months" behind those developed in the U.S.</p>`,
+                link: 'https://www.cnbc.com/2026/01/28/chinese-tech-companies-accelerate-ai-model-rollouts-us-rivals-deepseek-moonshot-kimi.html'
             },
             {
-                id: "2016670298746098077",
-                author: "Elon Musk",
-                handle: "@elonmusk",
-                text: "RT @MELANIATRUMP: MELANIA, a film\n1.30.2026\n@NYSE NYC",
-                time: "Jan 28 • 4:30 PM",
-                replies: 0, retweets: 242, likes: 0,
-                hasMedia: true,
-                mediaUrl: "https://pbs.twimg.com/amplify_video_thumb/2016662899754672128/img/tljDbEvy2bQZnv3S.jpg",
-                url: "https://twitter.com/elonmusk/status/2016670298746098077"
+                id: 2,
+                category: 'ai',
+                title: 'Sam Altman Eyes Biometric Social Network to Kill Bots — World Token Jumps 27%',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'OpenAI is reportedly planning to use Worldcoin\'s biometric verification to fight bots online. The WLD token surged on the news of a potential biometric social network.',
+                fullText: `<p>The WLD token surged 27% after Forbes reported that Sam Altman's OpenAI is planning to use Worldcoin to fight bots online.</p>
+                <p>The integration would leverage Worldcoin's "proof of personhood" system, which uses iris scans to verify that users are real humans rather than AI bots.</p>
+                <p>As AI-generated content and bot activity continue to flood social platforms, the demand for reliable human verification has skyrocketed.</p>
+                <p>Worldcoin's World ID system could become the foundation for a new kind of social network where every participant is verified as human.</p>
+                <p>This represents a major strategic shift for OpenAI, which has been focused primarily on advancing AI capabilities rather than limiting AI-driven spam and manipulation.</p>`,
+                link: 'https://www.coindesk.com/business/2026/01/28/world-token-jumps-27-as-sam-altman-reportedly-eyes-a-biometric-social-network-to-kill-off-bots'
             },
             {
-                id: "2016670137378873828",
-                author: "Samson Mow",
-                handle: "@Excellion",
-                text: "RT @saylor: Bitcoin is the endgame.",
-                time: "Jan 28 • 4:30 PM",
-                replies: 0, retweets: 933, likes: 0,
-                hasMedia: true,
-                mediaUrl: "https://pbs.twimg.com/media/G_wcOk6WoAAZbM-.jpg",
-                url: "https://twitter.com/Excellion/status/2016670137378873828"
+                id: 3,
+                category: 'ai',
+                title: 'Ethereum to Roll Out New AI Agents Standard Soon',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'The Ethereum Foundation is preparing to release a new standard for AI agents operating on-chain. Plus: Solana\'s latest phase, OP token buybacks, and EF post-quantum security team.',
+                fullText: `<p>The Ethereum Foundation is preparing to release a new standard for AI agents operating on-chain, marking a significant step toward formalizing how autonomous AI systems interact with blockchain infrastructure.</p>
+                <p>The new standard will define how AI agents can securely manage wallets, execute transactions, and interact with smart contracts.</p>
+                <p>In other protocol news, Optimism governance has approved an OP token buyback plan tied to superchain revenue, linking the token more directly to the economic performance of the Superchain.</p>
+                <p>Meanwhile, the Ethereum Foundation is also assembling a post-quantum security team to prepare the network for the eventual threat of quantum computing.</p>`,
+                link: 'https://www.coindesk.com/tech/2026/01/28/the-protocol-ethereum-to-roll-out-new-ai-agents-standard-soon'
             },
             {
-                id: "2016669581876646038",
-                author: "Patrick Bet-David",
-                handle: "@patrickbetdavid",
-                text: "Socialism never changes.\n\nThey promise you free things until they get elected.\nThey blame the rich for your struggles.\nMajority buys into it.\nThe rich leave the state.\nThen they raise taxes on YOU.\nFinally, the middle class gets DESTROYED.",
-                time: "Jan 28 • 4:27 PM",
-                replies: 22, retweets: 24, likes: 149,
-                hasMedia: false,
-                url: "https://twitter.com/patrickbetdavid/status/2016669581876646038"
+                id: 4,
+                category: 'ai',
+                title: 'Meta & Microsoft Double Down on AI: $115-135B Capital Spending Planned',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Meta\'s Q4 earnings reveal massive AI infrastructure plans. Capital spending for 2026 projected at $115-135 billion — well ahead of consensus. Bitcoin miners could benefit from AI data center demand.',
+                fullText: `<p>In its fourth quarter earnings report, Meta said capital spending plans for 2026 should be in the range of $115-$135 billion, well ahead of consensus forecasts.</p>
+                <p>The massive increase in spending signals Meta's aggressive push to build out AI infrastructure, including data centers capable of training next-generation models.</p>
+                <p>Microsoft also reported continued heavy investment in AI infrastructure, with both companies racing to secure GPU capacity and energy resources.</p>
+                <p>Analysts note that Bitcoin miners could benefit from this trend, as their existing power infrastructure and cooling capabilities make them attractive partners for AI data center operations.</p>
+                <p>The convergence of crypto mining and AI computing represents a potential new revenue stream for miners facing halving-related pressure on Bitcoin rewards.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/28/meta-and-microsoft-continue-going-big-on-ai-spending-here-s-how-bitcoin-miners-could-benefit'
             },
             {
-                id: "2016667797850395050",
-                author: "Neil Jacobs",
-                handle: "@NeilJacobs",
-                text: "Bitcoin will surpass gold's market cap. Not a doubt in my mind.",
-                time: "Jan 28 • 4:20 PM",
-                replies: 2, retweets: 3, likes: 8,
-                hasMedia: false,
-                url: "https://twitter.com/NeilJacobs/status/2016667797850395050"
+                id: 5,
+                category: 'ai',
+                title: 'OpenAI Sora Now Generates 1-3 Videos Simultaneously',
+                source: 'Twitter @testingcatalog',
+                time: 'Jan 28, 2026',
+                summary: 'OpenAI\'s video generation tool Sora has been updated to allow generating multiple videos at once, significantly speeding up the creative workflow.',
+                fullText: `<p>OpenAI has quietly updated its Sora video generation tool to allow users to generate 1-3 videos simultaneously.</p>
+                <p>This update addresses one of the main productivity bottlenecks creators faced when using the tool — the need to wait for each generation to complete before starting another.</p>
+                <p>The change suggests OpenAI has scaled its inference infrastructure to handle more parallel workloads, likely in response to user demand.</p>
+                <p>Video generation remains one of the most compute-intensive AI applications, and this improvement signals continued investment in making the technology more accessible.</p>`,
+                link: 'https://twitter.com/testingcatalog/status/2016679637422678423'
             },
             {
-                id: "2016670199114547361",
-                author: "NVK",
-                handle: "@nvk",
-                text: "RT @Eric_BIGfund: Fed independence dies the moment the Chair plays politics. See: Jerome Powell.",
-                time: "Jan 28 • 4:30 PM",
-                replies: 0, retweets: 6, likes: 0,
-                hasMedia: false,
-                url: "https://twitter.com/nvk/status/2016670199114547361"
+                id: 6,
+                category: 'bitcoin',
+                title: 'Tesla Holds 11,509 BTC — Books $239M Digital Asset Loss in Q4',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Tesla made no changes to its Bitcoin holdings in Q4. The company\'s 11,509 BTC stack is worth about $1 billion at current prices near $89,000.',
+                fullText: `<p>Tesla made no changes to its Bitcoin holdings in Q4, keeping its stack at 11,509 coins worth approximately $1 billion at BTC's current price near $89,000.</p>
+                <p>However, the company booked a $239 million digital asset loss during the quarter, reflecting the accounting treatment under new fair value rules.</p>
+                <p>This marks continued steadiness in Tesla's crypto strategy after years of volatility in its approach to Bitcoin holdings.</p>
+                <p>The company had previously sold 75% of its Bitcoin in 2022, but CEO Elon Musk has maintained that the remaining holdings represent a long-term position.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/28/tesla-made-no-changes-to-bitcoin-holdings-in-q4-as-it-booked-usd239-million-digital-asset-loss'
             },
             {
-                id: "2016669683064459558",
-                author: "Aaron Ng",
-                handle: "@localghost",
-                text: "Whoa, Alexandre is selling eggs now.\n\nGoing to try this out just because their milk is so great. Closest thing I've had to Hokkaido dairy in the US.",
-                time: "Jan 28 • 4:28 PM",
-                replies: 0, retweets: 0, likes: 0,
-                hasMedia: true,
-                mediaUrl: "https://pbs.twimg.com/media/G_ymY3LbUAA3oqX.jpg",
-                url: "https://twitter.com/localghost/status/2016669683064459558"
+                id: 7,
+                category: 'bitcoin',
+                title: 'Bitcoin Subdued as Gold Races to Record $5,400 After Powell Remarks',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Gold hit new all-time highs above $5,400 while Bitcoin remained range-bound. Fed Chair Powell said he takes no macro signal from the raging bull market in precious metals.',
+                fullText: `<p>Gold surged to a new record above $5,400 an ounce following Federal Reserve Chair Jerome Powell's remarks, while Bitcoin remained subdued near $89,000.</p>
+                <p>Gold fans rushed in to buy as the Fed chair said he took no macro signal from the raging bull market in precious metals.</p>
+                <p>The divergence between gold and Bitcoin has puzzled some investors who expected Bitcoin to benefit from the same safe-haven flows.</p>
+                <p>Analysts suggest that Bitcoin's recent correlation with tech stocks may be keeping it tied to risk-asset dynamics rather than acting as digital gold.</p>
+                <p>The spot gold price is now up over 15% year-to-date, significantly outpacing Bitcoin's performance.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/28/bitcoin-remains-subdued-as-gold-races-to-new-record-above-usd5-400-following-jerome-powell-remarks'
             },
             {
-                id: "2016668871168799049",
-                author: "Cernovich",
-                handle: "@Cernovich",
-                text: "Neo-Bolsheviks are prepared to die as long as it generates sympathetic media for their kid. This is an Islamic terrorist level mindset. We have to be honest about what is going on.",
-                time: "Jan 28 • 4:25 PM",
-                replies: 5, retweets: 15, likes: 113,
-                hasMedia: false,
-                url: "https://twitter.com/Cernovich/status/2016668871168799049"
+                id: 8,
+                category: 'bitcoin',
+                title: 'White House to Meet Crypto & Banking Execs on Market Structure Bill',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'The White House is convening crypto and banking executives to discuss the stalled market structure legislation. A vote was delayed earlier this month amid stablecoin regulation disputes.',
+                fullText: `<p>The White House is set to meet with cryptocurrency and banking executives to discuss the market structure bill that has hit resistance in Congress.</p>
+                <p>A vote on the legislation was delayed earlier this month after hitting resistance over how it proposes regulation regarding stablecoins.</p>
+                <p>Industry leaders are hoping to find common ground that addresses both crypto innovation and traditional banking concerns.</p>
+                <p>The bill aims to provide regulatory clarity for digital assets, a long-sought goal for an industry that has operated in a gray zone for years.</p>
+                <p>Coinbase CEO Brian Armstrong has been vocal about banks lobbying to weaken the crypto-friendly provisions in the legislation.</p>`,
+                link: 'https://www.coindesk.com/policy/2026/01/28/white-house-to-meet-with-crypto-banking-executives-to-discuss-market-structure-bill-reuters-reports'
             },
             {
-                id: "2016669131324739994",
-                author: "Tony Zhao",
-                handle: "@tonyzzhao",
-                text: "We are lucky to have you Hojung. Welcome to the team!\n\n(New hire at @sundayrobotics as full-stack robotics research engineer)",
-                time: "Jan 28 • 4:26 PM",
-                replies: 1, retweets: 0, likes: 9,
-                hasMedia: false,
-                url: "https://twitter.com/tonyzzhao/status/2016669131324739994"
+                id: 9,
+                category: 'bitcoin',
+                title: 'Peter Thiel & Galaxy-Backed Citrea Aims to Turn Bitcoin into High-Speed Bank',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Founders Fund and Galaxy-backed Citrea is launching its mainnet, aiming to unlock Bitcoin-denominated credit markets with a Treasury-backed stablecoin for USD settlement.',
+                fullText: `<p>Citrea, backed by Peter Thiel's Founders Fund and Galaxy, is launching its mainnet with an ambitious goal: turn idle Bitcoin into a high-speed bank account.</p>
+                <p>The project aims to unlock Bitcoin-denominated credit markets with a new Treasury-backed stablecoin designed for USD settlement.</p>
+                <p>This represents a significant evolution in Bitcoin's utility beyond simple store-of-value, potentially enabling DeFi-like applications on Bitcoin.</p>
+                <p>The Treasury-backed stablecoin approach addresses concerns about algorithmic stablecoin risks while providing the yield opportunities that crypto users have come to expect.</p>`,
+                link: 'https://www.coindesk.com/tech/2026/01/28/peter-thiel-and-galaxy-backed-citrea-wants-to-turn-idle-bitcoin-into-a-high-speed-bank-account'
             },
             {
-                id: "2016670099806310843",
-                author: "Samson Mow",
-                handle: "@Excellion",
-                text: "RT @saylor: We buy real bitcoin. We audit our custodians. We don't rehypothecate. You shouldn't either.",
-                time: "Jan 28 • 4:29 PM",
-                replies: 0, retweets: 623, likes: 0,
-                hasMedia: false,
-                url: "https://twitter.com/Excellion/status/2016670099806310843"
+                id: 10,
+                category: 'bitcoin',
+                title: 'Buy Bitcoin BEFORE Apple Announces It — Simply Bitcoin',
+                source: 'Twitter @SimplyBitcoin',
+                time: 'Jan 28, 2026',
+                summary: 'Speculation mounts that Apple may be preparing a Bitcoin announcement. Simply Bitcoin urges followers to front-run the potential corporate treasury move.',
+                fullText: `<p>The Bitcoin community is buzzing with speculation that Apple may be preparing to add Bitcoin to its corporate treasury.</p>
+                <p>Simply Bitcoin, a popular Bitcoin-focused account, urged followers to "Buy Bitcoin BEFORE Apple Announces It."</p>
+                <p>While no official announcement has been made, the speculation follows a pattern of major tech companies considering Bitcoin as a treasury asset.</p>
+                <p>Apple's massive cash reserves and history of financial innovation make it a perennial subject of Bitcoin adoption speculation.</p>`,
+                link: 'https://twitter.com/SimplyBitcoin/status/2016683490197024780'
             },
             {
-                id: "2016667765546131941",
-                author: "Cernovich",
-                handle: "@Cernovich",
-                text: "In 2012, California had a ballot measure to increase the top tax rate for millionaires. It passed 55 to 45.\n\nIf there's a federal amnesty, then there will be a billionaire tax.",
-                time: "Jan 28 • 4:20 PM",
-                replies: 1, retweets: 7, likes: 44,
-                hasMedia: true,
-                mediaUrl: "https://pbs.twimg.com/media/G_ykW8CbUAAtsOh.jpg",
-                url: "https://twitter.com/Cernovich/status/2016667765546131941"
+                id: 11,
+                category: 'bitcoin',
+                title: 'Warren Buffett: "Would Not Buy All 21M Bitcoin for $25"',
+                source: 'Twitter @SimplyBitcoin',
+                time: 'Jan 28, 2026',
+                summary: 'The Oracle of Omaha doubles down on his Bitcoin skepticism. The Bitcoin community responds: "Good, more for the people who need it."',
+                fullText: `<p>Warren Buffett reiterated his long-standing skepticism of Bitcoin, stating he would not buy all 21 million Bitcoin even if offered for just $25.</p>
+                <p>The 95-year-old investor has consistently maintained that Bitcoin produces nothing and has no intrinsic value.</p>
+                <p>Bitcoin advocates responded with characteristic humor: "Good, more for the people who need it."</p>
+                <p>The generational divide on Bitcoin continues, with younger investors viewing it as a hedge against monetary debasement while traditional value investors like Buffett remain unconvinced.</p>`,
+                link: 'https://twitter.com/SimplyBitcoin/status/2016683417513890033'
             },
             {
-                id: "2016667974141419586",
-                author: "Samson Mow",
-                handle: "@Excellion",
-                text: "RT @BraginRights: Claude Code thinks I won't notice him sneaking in a proper fix while pretending it's just adding some logging. 😂",
-                time: "Jan 28 • 4:21 PM",
-                replies: 0, retweets: 3, likes: 0,
-                hasMedia: false,
-                url: "https://twitter.com/Excellion/status/2016667974141419586"
+                id: 12,
+                category: 'bitcoin',
+                title: 'Fed Holds Rates Steady — Early Rate Cut Bets Vanish, Bitcoin Stalls',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'The Federal Reserve held policy steady as expectations for early rate cuts evaporated. Bitcoin\'s poor price performance reflects the hawkish shift in monetary policy expectations.',
+                fullText: `<p>The Federal Reserve held interest rates steady at its January meeting, capping a sharp reversal in easing expectations.</p>
+                <p>Early rate cut bets have largely vanished from the market, with traders now pricing in a more prolonged period of elevated rates.</p>
+                <p>Bitcoin's subdued price action is likely tied to this shift, as the cryptocurrency has shown sensitivity to monetary policy expectations.</p>
+                <p>Higher-for-longer interest rates typically reduce the appeal of non-yielding assets like Bitcoin, while also strengthening the dollar.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/27/federal-reserve-holds-policy-steady-as-early-rate-cut-bets-vanish-and-bitcoin-stalls'
             },
             {
-                id: "2016670194673078699",
-                author: "Wrath Of Gnon",
-                handle: "@wrathofgnon",
-                text: "\"She had, so to speak, personal control over reality.\"\n– Milan Kundera",
-                time: "Jan 28 • 4:30 PM",
-                replies: 0, retweets: 265, likes: 0,
-                hasMedia: true,
-                mediaUrl: "https://pbs.twimg.com/media/CVWJ1hIUAAAojDQ.jpg",
-                url: "https://twitter.com/wrathofgnon/status/2016670194673078699"
+                id: 13,
+                category: 'tech',
+                title: 'SpaceX Eyes $1.5 TRILLION IPO — Timed for Musk\'s Birthday & Planetary Alignment',
+                source: 'The Guardian',
+                time: 'Jan 28, 2026',
+                summary: 'Elon Musk targets mid-June for SpaceX IPO at $1.5 trillion valuation — coinciding with Jupiter-Venus alignment and his 55th birthday. Looking to raise $50B.',
+                fullText: `<p>Elon Musk's SpaceX is considering a flotation valuing the rocket company at $1.5 trillion that will reportedly be timed for early summer to coincide with a planetary alignment and the multibillionaire's birthday.</p>
+                <p>The world's richest person is targeting a symbolic date of mid-June for the initial public offering, according to the Financial Times. This would be around the same time as Jupiter and Venus appear in close proximity and shortly before Musk turns 55 on June 28.</p>
+                <p>SpaceX is seeking to raise $50 billion – valuing it at $1.5 trillion – compared with previous reports that it was looking for $25 billion at an $800 billion valuation.</p>
+                <p>Bank of America, JP Morgan, Goldman Sachs, and Morgan Stanley are being considered for leading roles in the share sale.</p>
+                <p>Musk, whose $680 billion fortune would be turbo-boosted by a SpaceX flotation, said last year the company's annual revenue would be $15.5 billion, with $1.1 billion coming from NASA contracts.</p>
+                <p>If the flotation goes ahead it would involve a bigger initial fundraising than the IPO of Saudi Aramco, which raised $29 billion in 2019.</p>`,
+                link: 'https://www.theguardian.com/business/2026/jan/28/spacex-15bn-ipo-elon-musk-birthday-planets-flotation'
             },
             {
-                id: "2016669126387737023",
-                author: "AK",
-                handle: "@_akhaliq",
-                text: "Youtu-VL\n\nUnleashing Visual Potential via Unified Vision-Language Supervision",
-                time: "Jan 28 • 4:26 PM",
-                replies: 2, retweets: 2, likes: 5,
-                hasMedia: false,
-                url: "https://twitter.com/_akhaliq/status/2016669126387737023"
+                id: 14,
+                category: 'tech',
+                title: 'Amazon Announces 16,000 Job Cuts — "Project Dawn" Email Leaked Early',
+                source: 'The Guardian',
+                time: 'Jan 28, 2026',
+                summary: 'Amazon\'s second major layoff wave in 3 months. Internal email from "Project Dawn" was accidentally sent before official announcement. CEO Andy Jassy has warned AI could replace many roles.',
+                fullText: `<p>Amazon has told workers it is cutting 16,000 jobs around the world to streamline its operations, hours after sending out a message to staff about the layoffs apparently in error.</p>
+                <p>It is the second big wave of job cuts at the US online retail company, coming just three months after the company said it was slashing 14,000 roles. Amazon employs about 1.5 million workers worldwide.</p>
+                <p>The company said the "additional organisational changes" were designed to "strengthen our organisation by reducing layers, increasing ownership, and removing bureaucracy."</p>
+                <p>The official announcement came just hours after workers at Amazon Web Services received a meeting invitation that contained a draft email revealing the cuts. The layoffs were referred to internally as "Project Dawn."</p>
+                <p>Amazon's CEO Andy Jassy has previously warned white-collar workers at the company that their jobs could be taken by AI in the next few years.</p>
+                <p>The news came as UPS said it would cut up to 30,000 jobs this year, adding to last year's staff reductions.</p>`,
+                link: 'https://www.theguardian.com/technology/2026/jan/28/amazon-global-job-cuts-email-error-workers-sent'
+            },
+            {
+                id: 15,
+                category: 'markets',
+                title: 'S&P 500 Breaks 7,000 for First Time — AI Boom Drives Historic Rally',
+                source: 'The Guardian',
+                time: 'Jan 28, 2026',
+                summary: 'Wall Street milestone: S&P 500 crosses 7,000, driven by AI optimism and tech earnings expectations. It took 9 months to go from 5,000 to 6,000 — tech now accounts for nearly half the index.',
+                fullText: `<p>On Wall Street, the S&P 500 index has gone through the 7,000 mark for the first time, driven by optimism around artificial intelligence and expectations of strong results from big technology companies.</p>
+                <p>The index is up 29 points just below the 7,000 level. The tech-heavy Nasdaq rose 150 points, or 0.6%, to 23,967 at the open.</p>
+                <p>It took about three years for the S&P 500 to rise to 5,000 points from 4,000, but only about nine months to jump from 5,000 to 6,000, in November 2024.</p>
+                <p>Technology stocks account for nearly half of the S&P 500.</p>
+                <p>Meta, Microsoft, and Tesla were due to report earnings, with investors watching closely for AI-related updates.</p>
+                <p>The US dollar has stabilized but hovers at a four-year low, while spot gold broke through $5,300 an ounce.</p>`,
+                link: 'https://www.theguardian.com/business/live/2026/jan/28/ai-boom-produce-dollar-federal-reserve-interest-rates-business-live-latest-news-updates'
+            },
+            {
+                id: 16,
+                category: 'tech',
+                title: 'UK CMA: Publishers Can Opt Out of Google AI Overviews',
+                source: 'The Guardian',
+                time: 'Jan 28, 2026',
+                summary: 'Major win for publishers: UK competition watchdog proposes allowing media to block Google from scraping content for AI summaries without losing search visibility.',
+                fullText: `<p>Web publishers and news organisations could be given the power to stop Google scraping their content for its AI Overviews, under measures announced by the UK competition watchdog.</p>
+                <p>Media organisations have experienced a drop in click-through traffic to their websites since Google started posting AI summaries at the top of search results.</p>
+                <p>Sites have been unable to opt out of their content being scraped for those overviews without also withdrawing from traditional Google search — a devastating trade-off given Google's market dominance.</p>
+                <p>The Competition and Markets Authority proposed "a fairer deal" allowing publishers to "be able to opt out of their content being used to power AI features such as AI Overviews or to train AI models outside of Google search."</p>
+                <p>Google said it is "working on ways to let news sites opt out of AI Overviews."</p>
+                <p>A Reuters Institute report found media executives worldwide feared search engine referrals would fall by 43% over the next three years amid the rise of AI summaries.</p>`,
+                link: 'https://www.theguardian.com/media/2026/jan/28/uk-media-groups-should-be-allowed-opt-out-of-google-ai-overviews-cma-proposals'
+            },
+            {
+                id: 17,
+                category: 'tech',
+                title: 'MegaETH Mainnet Goes Live Feb 9 — Testing "Real-Time" Ethereum Scaling',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Following its massively oversubscribed $450M token sale in October 2025, MegaETH prepares to launch its mainnet. The L2 promises "real-time" transaction speeds.',
+                fullText: `<p>MegaETH, the Ethereum Layer 2 promising "real-time" transaction processing, will launch its mainnet on February 9.</p>
+                <p>This follows its October 2025 $450 million token sale that was heavily oversubscribed, reflecting strong investor appetite for Ethereum scaling solutions.</p>
+                <p>MegaETH claims to offer transaction confirmation times measured in milliseconds rather than seconds, potentially enabling a new class of applications that require near-instant finality.</p>
+                <p>The launch will be a major test of whether the technology can deliver on its ambitious promises at scale.</p>`,
+                link: 'https://www.coindesk.com/tech/2026/01/28/megaeth-mainnet-to-go-live-feb-9-in-major-test-of-real-time-ethereum-scaling'
+            },
+            {
+                id: 18,
+                category: 'tech',
+                title: 'Robinhood CEO: Tokenized Stocks Could Prevent Another GameStop Freeze',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Vlad Tenev says blockchain-based stock trading would have prevented the 2021 trading halt. Blames the freeze on "bad infrastructure" that tokenization would solve.',
+                fullText: `<p>Robinhood CEO Vlad Tenev said tokenized stocks could prevent another GameStop-style trading freeze.</p>
+                <p>Tenev blamed the 2021 buying halt on his platform on "bad infrastructure" — a problem he says tokenization would solve.</p>
+                <p>Blockchain-based stock trading would enable 24/7 markets, instant settlement, and eliminate the clearinghouse bottlenecks that forced Robinhood to restrict trading.</p>
+                <p>The comments represent a significant evolution in Tenev's thinking, as he now positions crypto infrastructure as a solution to traditional finance's limitations.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/28/robinhood-ceo-pushes-for-tokenized-stocks-to-prevent-another-gamestop-style-meltdown'
+            },
+            {
+                id: 19,
+                category: 'tech',
+                title: 'X Chat Now Supports Cross-Platform E2E Encrypted Calls',
+                source: 'Twitter @XFreeze',
+                time: 'Jan 28, 2026',
+                summary: 'Audio and video calls on X now work fully between Android and iOS with end-to-end encryption. "Talk with anyone, with total privacy."',
+                fullText: `<p>X (formerly Twitter) has rolled out cross-platform calling support for its chat feature.</p>
+                <p>Audio and video calls now work seamlessly between Android and iOS devices, with end-to-end encryption ensuring privacy.</p>
+                <p>The feature positions X as a more complete communication platform, competing with WhatsApp, Signal, and other encrypted messaging services.</p>
+                <p>Elon Musk has long discussed plans to transform X into an "everything app" — and encrypted calling is another step in that direction.</p>`,
+                link: 'https://twitter.com/XFreeze/status/2016679197968912483'
+            },
+            {
+                id: 20,
+                category: 'tech',
+                title: 'Tesla Optimus Now in Manufacturing Capacity Reports',
+                source: 'Twitter @wholemars',
+                time: 'Jan 28, 2026',
+                summary: 'For the first time, Tesla\'s manufacturing capacity table includes Optimus robot production. Signal that humanoid robot manufacturing is scaling.',
+                fullText: `<p>Tesla's latest manufacturing capacity report now includes Optimus humanoid robots for the first time.</p>
+                <p>This signals that production of Tesla's humanoid robot has reached a scale significant enough to warrant inclusion in official capacity planning.</p>
+                <p>Elon Musk has stated that Optimus could eventually become more valuable than Tesla's car business, with potential to generate tens of billions in revenue.</p>
+                <p>The inclusion in capacity reports suggests Tesla is moving beyond prototype production toward meaningful manufacturing scale.</p>`,
+                link: 'https://twitter.com/wholemars/status/2016680362131283976'
+            },
+            {
+                id: 21,
+                category: 'markets',
+                title: 'Crypto Political Power: Fairshake Super PAC Hits $193M',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'The crypto industry\'s main campaign-finance arm got another $49M injection, already outpacing last cycle\'s total. Aided dozens of election wins.',
+                fullText: `<p>Fairshake, the cryptocurrency industry's chief campaign-finance arm, has amassed $193 million following another $49 million injection.</p>
+                <p>The super PAC already outpaces what it had in the last U.S. congressional races, when it aided dozens of victories for crypto-friendly candidates.</p>
+                <p>The influx of political spending reflects the industry's recognition that regulatory outcomes will be determined largely in Washington.</p>
+                <p>Major crypto companies including Coinbase, Ripple, and Andreessen Horowitz have been significant contributors to the fund.</p>`,
+                link: 'https://www.coindesk.com/policy/2026/01/28/crypto-s-political-power-supercharged-with-usd193-million-in-fairshake-thanks-to-new-cash'
+            },
+            {
+                id: 22,
+                category: 'markets',
+                title: 'Coinbase Rolls Out Prediction Markets to All U.S. Customers',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'The feature, built with regulated prediction market Kalshi, is now available nationwide. First announced in December.',
+                fullText: `<p>Coinbase has rolled out prediction markets to all U.S. customers, expanding the feature first announced in December.</p>
+                <p>The offering was built in partnership with Kalshi, a U.S.-regulated prediction market operator.</p>
+                <p>Prediction markets allow users to bet on the outcomes of future events, from elections to economic data releases.</p>
+                <p>The move positions Coinbase as more than just a crypto exchange, expanding into the broader world of speculative financial products.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/27/coinbase-rolls-out-prediction-market-to-u-s-customers'
+            },
+            {
+                id: 23,
+                category: 'business',
+                title: 'UK Government: Banks Must Stop Blocking Crypto Firms',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'UK officials say banks must treat crypto businesses fairly as final regulation nears. A push to become a global digital asset hub.',
+                fullText: `<p>The UK government has told banks they need to stop blocking crypto firms if the country wants to become a digital asset hub.</p>
+                <p>UK officials say banks must treat cryptocurrency businesses fairly as final regulation approaches.</p>
+                <p>Many legitimate crypto companies have struggled to maintain banking relationships, with institutions citing compliance concerns.</p>
+                <p>The government's intervention signals a commitment to fostering crypto innovation while maintaining appropriate oversight.</p>`,
+                link: 'https://www.coindesk.com/policy/2026/01/28/the-uk-government-says-banks-need-to-stop-blocking-crypto-firms-if-the-country-wants-to-become-a-digital-hub'
+            },
+            {
+                id: 24,
+                category: 'markets',
+                title: 'Paxos Gold Token Sees Record Inflows — Crypto Turns to Yellow Metal',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Tokenized gold improves the traditional metal\'s utility while Bitcoin trades like a risk asset. Crypto investors seeking safe haven in uncertain times.',
+                fullText: `<p>Paxos' gold-backed token PAXG has seen record inflows as crypto investors turn to the yellow metal amid market uncertainty.</p>
+                <p>Tokenized gold has improved the traditional store of value metal's utility, allowing for instant transfers and fractional ownership.</p>
+                <p>Meanwhile, Bitcoin has been trading more like a risk asset, disappointing investors who expected it to act as digital gold.</p>
+                <p>The divergence highlights the ongoing debate about Bitcoin's role as a safe haven versus a speculative tech asset.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/28/paxos-gold-token-rakes-in-record-inflows-as-crypto-investors-turn-to-the-yellow-metal'
+            },
+            {
+                id: 25,
+                category: 'twitter',
+                title: 'Hoboken: 9 Years Without a Fatal Crash — How They Did It',
+                source: 'Twitter @sapinker (Steven Pinker RT)',
+                time: 'Jan 28, 2026',
+                summary: 'The New Jersey city has achieved an remarkable safety record. A model for urban planning and traffic safety.',
+                fullText: `<p>Steven Pinker shared a story about Hoboken, New Jersey achieving nine straight years without a single fatal traffic crash.</p>
+                <p>The city's success has come through a combination of infrastructure changes, traffic calming measures, and policy interventions.</p>
+                <p>Key measures include reduced speed limits, protected bike lanes, expanded pedestrian zones, and redesigned intersections.</p>
+                <p>The case study has become a model for other cities seeking to achieve "Vision Zero" — the goal of eliminating traffic deaths entirely.</p>`,
+                link: 'https://twitter.com/sapinker/status/2016680844979523728'
+            },
+            {
+                id: 26,
+                category: 'twitter',
+                title: 'JD Vance vs Tammy Duckworth: "Forest Gump Arguing with Isaac Newton"',
+                source: 'Twitter @JDVance',
+                time: 'Jan 28, 2026',
+                summary: 'The VP\'s spicy take on the Rubio confirmation hearing goes viral with 82K+ likes. Elon Musk responds with "😂".',
+                fullText: `<p>Vice President JD Vance made waves with a colorful comparison during Marco Rubio's confirmation hearing.</p>
+                <p>"Watching Tammy Duckworth obsessively interrupt Marco Rubio during this hearing is like watching Forest Gump argue with Isaac Newton," Vance posted.</p>
+                <p>The tweet garnered over 82,000 likes and 9,000 retweets, with Elon Musk chiming in with a laughing emoji.</p>
+                <p>The exchange highlights the combative tone of the current political climate and Vance's willingness to engage in social media sparring.</p>`,
+                link: 'https://twitter.com/JDVance/status/2016559040197775472'
+            },
+            {
+                id: 27,
+                category: 'twitter',
+                title: 'Passive Investing Cult: "Like Betting on a Fixed Game"',
+                source: 'Twitter @mitchdmoore',
+                time: 'Jan 28, 2026',
+                summary: 'Contrarian take on index fund investing gains traction. "I used to be in the passive investing cult until I realized these 3 facts..."',
+                fullText: `<p>Mitch Moore shared a contrarian thread challenging the conventional wisdom around passive index investing.</p>
+                <p>"I used to be in the passive investing cult until I realized these 3 facts... Passive investing is like betting on a fixed game," he wrote.</p>
+                <p>The thread sparked debate about the merits of index funds versus active management in the current market environment.</p>
+                <p>With the S&P 500 increasingly dominated by a handful of mega-cap tech stocks, some investors are questioning whether passive investing still provides true diversification.</p>`,
+                link: 'https://twitter.com/mitchdmoore/status/2016685308952088760'
+            },
+            {
+                id: 28,
+                category: 'twitter',
+                title: 'Brian Feroldi: Warren Buffett Investing Rules',
+                source: 'Twitter @BrianFeroldi',
+                time: 'Jan 28, 2026',
+                summary: 'Popular finance educator shares a visual breakdown of the Oracle of Omaha\'s core investment principles.',
+                fullText: `<p>Brian Feroldi, known for his visual breakdowns of investing concepts, shared an infographic on Warren Buffett's investing rules.</p>
+                <p>The post covers Buffett's core principles including focusing on businesses you understand, buying at fair prices, and thinking long-term.</p>
+                <p>Ironic timing given Buffett's same-day comments about refusing to buy all Bitcoin for $25.</p>
+                <p>The post is a reminder that value investing principles remain influential even as new asset classes like crypto emerge.</p>`,
+                link: 'https://twitter.com/BrianFeroldi/status/2016682791954448649'
+            },
+            {
+                id: 29,
+                category: 'business',
+                title: 'Wall Street Pushes Back on Tokenized Securities Exemptions',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Bank executives press SEC to apply traditional securities rules to blockchain-based trading. Resistance to DeFi-style exemptions.',
+                fullText: `<p>Wall Street giants are pushing back on proposed exemptions for tokenized securities in meetings with the SEC.</p>
+                <p>Executives and industry groups pressed regulators to apply traditional securities rules to blockchain-based trading.</p>
+                <p>The pushback comes as DeFi enters the regulatory debate, with traditional finance worried about an unlevel playing field.</p>
+                <p>Banks argue that allowing crypto-native platforms to operate under different rules could create regulatory arbitrage and systemic risks.</p>`,
+                link: 'https://www.coindesk.com/policy/2026/01/28/wall-street-giants-push-back-on-exemptions-for-tokenized-securities-in-sec-meeting'
+            },
+            {
+                id: 30,
+                category: 'business',
+                title: 'Strive Raises $225M — Buys More Bitcoin, Pays Off Loans',
+                source: 'CoinDesk',
+                time: 'Jan 28, 2026',
+                summary: 'Bitcoin treasury firm\'s stock offering was oversubscribed, upsized from initial $150M target. Continues aggressive BTC accumulation strategy.',
+                fullText: `<p>Strive, the Bitcoin treasury firm, has raised $225 million through an oversubscribed stock offering.</p>
+                <p>The offering of SATA shares was upsized from the initial $150 million target, reflecting strong investor demand.</p>
+                <p>Proceeds will be used to pay off existing loans and acquire more Bitcoin, continuing the company's aggressive accumulation strategy.</p>
+                <p>The successful raise suggests continued institutional appetite for Bitcoin exposure through equity vehicles.</p>`,
+                link: 'https://www.coindesk.com/markets/2026/01/28/strive-clears-semler-debt-off-books-buys-more-bitcoin-after-usd225-million-preferred-stock-sale'
             }
         ];
-
-        let cardStack = [...tweets];
-        let currentDragCard = null;
+        
+        let currentIndex = 0;
+        let savedItems = [];
         let startX = 0;
         let currentX = 0;
-
-        function updateCount() {
-            document.getElementById('remaining').textContent = cardStack.length;
-        }
-
+        let isDragging = false;
+        
         function renderCards() {
-            const container = document.getElementById('card-container');
-            container.innerHTML = '';
+            const stack = document.getElementById('cardStack');
+            stack.innerHTML = '';
             
-            if (cardStack.length === 0) {
-                container.innerHTML = `
-                    <div class="done-message">
-                        <h2>✨ All done!</h2>
-                        <p>You've reviewed all ${tweets.length} tweets.</p>
-                    </div>
-                `;
+            if (currentIndex >= newsItems.length) {
+                renderEmptyState();
                 return;
             }
-
-            // Only render top 3 cards
-            cardStack.slice(0, 3).forEach((tweet, index) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.dataset.index = index;
-                card.innerHTML = `
-                    <div class="swipe-hint later">LATER</div>
-                    <div class="swipe-hint done">DONE</div>
-                    <div class="author">
-                        <div class="author-avatar">${tweet.author.charAt(0)}</div>
-                        <div class="author-info">
-                            <div class="author-name">${tweet.author}</div>
-                            <div class="author-handle">${tweet.handle}</div>
-                        </div>
+            
+            // Render next 3 cards (stacked)
+            for (let i = Math.min(currentIndex + 2, newsItems.length - 1); i >= currentIndex; i--) {
+                const item = newsItems[i];
+                const card = createCard(item, i - currentIndex);
+                stack.appendChild(card);
+            }
+            
+            updateProgress();
+            setupSwipeHandlers();
+        }
+        
+        function createCard(item, stackIndex) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.transform = `scale(${1 - stackIndex * 0.05}) translateY(${stackIndex * 10}px)`;
+            card.style.zIndex = 10 - stackIndex;
+            
+            if (stackIndex > 0) {
+                card.style.pointerEvents = 'none';
+            }
+            
+            card.innerHTML = `
+                <div class="swipe-indicator swipe-left">📌 SAVE</div>
+                <div class="swipe-indicator swipe-right">✕ SKIP</div>
+                <div class="card-header">
+                    <span class="card-category cat-${item.category}">${item.category}</span>
+                    <h2 class="card-title">${item.title}</h2>
+                    <div class="card-meta">
+                        <span class="card-source">${item.source}</span>
+                        <span>•</span>
+                        <span>${item.time}</span>
                     </div>
-                    <div class="tweet-time">📅 ${tweet.time}</div>
-                    <div class="tweet-text">${tweet.text.replace(/\n/g, '<br>')}</div>
-                    ${tweet.hasMedia ? `<div class="tweet-media"><img src="${tweet.mediaUrl}" alt="" onerror="this.parentElement.remove()"></div>` : ''}
-                    <div class="stats">
-                        <span>💬 ${tweet.replies}</span>
-                        <span>🔁 ${tweet.retweets}</span>
-                        <span>❤️ ${tweet.likes}</span>
+                </div>
+                <div class="card-content">
+                    <p class="card-summary">${item.summary}</p>
+                    <div class="card-full-text">${item.fullText}</div>
+                    <a href="${item.link}" target="_blank" class="card-link">Read Original →</a>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function renderEmptyState() {
+            const stack = document.getElementById('cardStack');
+            let savedHtml = '';
+            
+            if (savedItems.length > 0) {
+                savedHtml = `
+                    <div class="saved-section">
+                        <h3>📌 Saved for Later (${savedItems.length})</h3>
+                        ${savedItems.map(item => `
+                            <div class="saved-item" onclick="window.open('${item.link}', '_blank')">
+                                <div class="saved-item-title">${item.title}</div>
+                            </div>
+                        `).join('')}
                     </div>
-                    <a href="${tweet.url}" target="_blank" class="view-tweet">View on X →</a>
                 `;
-                
-                if (index === 0) {
-                    card.addEventListener('touchstart', handleTouchStart, { passive: true });
-                    card.addEventListener('touchmove', handleTouchMove, { passive: true });
-                    card.addEventListener('touchend', handleTouchEnd);
-                }
-                
-                container.appendChild(card);
-            });
-            
-            updateCount();
-        }
-
-        function handleTouchStart(e) {
-            currentDragCard = e.target.closest('.card');
-            startX = e.touches[0].clientX;
-            currentDragCard.classList.add('dragging');
-        }
-
-        function handleTouchMove(e) {
-            if (!currentDragCard) return;
-            currentX = e.touches[0].clientX - startX;
-            
-            const rotation = currentX * 0.05;
-            currentDragCard.style.transform = `translate(calc(-50% + ${currentX}px), -50%) rotate(${rotation}deg)`;
-            
-            // Show hints
-            const laterHint = currentDragCard.querySelector('.swipe-hint.later');
-            const doneHint = currentDragCard.querySelector('.swipe-hint.done');
-            
-            if (currentX < -30) {
-                laterHint.style.opacity = Math.min(1, Math.abs(currentX) / 80);
-                doneHint.style.opacity = 0;
-            } else if (currentX > 30) {
-                doneHint.style.opacity = Math.min(1, currentX / 80);
-                laterHint.style.opacity = 0;
-            } else {
-                laterHint.style.opacity = 0;
-                doneHint.style.opacity = 0;
-            }
-        }
-
-        function handleTouchEnd() {
-            if (!currentDragCard) return;
-            currentDragCard.classList.remove('dragging');
-            
-            if (currentX < -80) {
-                animateAndAction('left');
-            } else if (currentX > 80) {
-                animateAndAction('right');
-            } else {
-                // Reset position
-                currentDragCard.style.transform = 'translate(-50%, -50%)';
-                const hints = currentDragCard.querySelectorAll('.swipe-hint');
-                hints.forEach(h => h.style.opacity = 0);
             }
             
-            currentDragCard = null;
-            currentX = 0;
+            stack.innerHTML = `
+                <div class="empty-state">
+                    <h2>All caught up! 🎉</h2>
+                    <p>You've gone through all ${newsItems.length} stories</p>
+                    ${savedHtml}
+                </div>
+            `;
         }
-
-        function animateAndAction(direction) {
-            const card = document.querySelector('.card[data-index="0"]');
+        
+        function updateProgress() {
+            document.getElementById('current').textContent = Math.min(currentIndex + 1, newsItems.length);
+            document.getElementById('total').textContent = newsItems.length;
+        }
+        
+        function setupSwipeHandlers() {
+            const card = document.querySelector('.card');
             if (!card) return;
             
-            card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-            if (direction === 'left') {
-                card.style.transform = 'translate(-150%, -50%) rotate(-20deg)';
-                card.style.opacity = '0';
+            card.addEventListener('touchstart', handleTouchStart, { passive: true });
+            card.addEventListener('touchmove', handleTouchMove, { passive: true });
+            card.addEventListener('touchend', handleTouchEnd);
+            
+            card.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+        
+        function handleTouchStart(e) {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }
+        
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            currentX = e.touches[0].clientX - startX;
+            updateCardPosition();
+        }
+        
+        function handleTouchEnd() {
+            handleSwipeEnd();
+        }
+        
+        function handleMouseDown(e) {
+            startX = e.clientX;
+            isDragging = true;
+            e.target.closest('.card').classList.add('dragging');
+        }
+        
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            currentX = e.clientX - startX;
+            updateCardPosition();
+        }
+        
+        function handleMouseUp() {
+            handleSwipeEnd();
+            const card = document.querySelector('.card.dragging');
+            if (card) card.classList.remove('dragging');
+        }
+        
+        function updateCardPosition() {
+            const card = document.querySelector('.card');
+            if (!card) return;
+            
+            const rotation = currentX * 0.05;
+            card.style.transform = `translateX(${currentX}px) rotate(${rotation}deg)`;
+            
+            const leftIndicator = card.querySelector('.swipe-left');
+            const rightIndicator = card.querySelector('.swipe-right');
+            
+            if (currentX < -50) {
+                leftIndicator.style.opacity = Math.min(Math.abs(currentX) / 100, 1);
+                rightIndicator.style.opacity = 0;
+            } else if (currentX > 50) {
+                rightIndicator.style.opacity = Math.min(currentX / 100, 1);
+                leftIndicator.style.opacity = 0;
             } else {
-                card.style.transform = 'translate(50%, -50%) rotate(20deg)';
-                card.style.opacity = '0';
+                leftIndicator.style.opacity = 0;
+                rightIndicator.style.opacity = 0;
+            }
+        }
+        
+        function handleSwipeEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            if (currentX < -100) {
+                saveCard();
+            } else if (currentX > 100) {
+                dismissCard();
+            } else {
+                resetCardPosition();
             }
             
+            currentX = 0;
+        }
+        
+        function resetCardPosition() {
+            const card = document.querySelector('.card');
+            if (card) {
+                card.style.transition = 'transform 0.3s ease';
+                card.style.transform = 'translateX(0) rotate(0)';
+                setTimeout(() => {
+                    card.style.transition = '';
+                }, 300);
+            }
+        }
+        
+        function saveCard() {
+            const card = document.querySelector('.card');
+            if (!card || currentIndex >= newsItems.length) return;
+            
+            savedItems.push(newsItems[currentIndex]);
+            
+            card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            card.style.transform = 'translateX(-150%) rotate(-20deg)';
+            card.style.opacity = '0';
+            
             setTimeout(() => {
-                if (direction === 'left') {
-                    // Move to bottom
-                    const tweet = cardStack.shift();
-                    cardStack.push(tweet);
-                } else {
-                    // Remove
-                    cardStack.shift();
-                }
+                currentIndex++;
                 renderCards();
             }, 300);
         }
-
-        function swipeLeft() {
-            animateAndAction('left');
+        
+        function dismissCard() {
+            const card = document.querySelector('.card');
+            if (!card || currentIndex >= newsItems.length) return;
+            
+            card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            card.style.transform = 'translateX(150%) rotate(20deg)';
+            card.style.opacity = '0';
+            
+            setTimeout(() => {
+                currentIndex++;
+                renderCards();
+            }, 300);
         }
-
-        function swipeRight() {
-            animateAndAction('right');
-        }
-
-        // Keyboard
+        
+        // Keyboard support
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') swipeLeft();
-            if (e.key === 'ArrowRight') swipeRight();
+            if (e.key === 'ArrowLeft') {
+                saveCard();
+            } else if (e.key === 'ArrowRight') {
+                dismissCard();
+            }
         });
-
-        // Init
+        
+        // Initialize
         renderCards();
     </script>
 </body>

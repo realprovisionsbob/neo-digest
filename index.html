@@ -13,97 +13,93 @@
             min-height: 100vh;
             color: #e0e0e0;
             overflow: hidden;
-            touch-action: pan-y;
         }
         
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            position: fixed; top: 0; left: 0; right: 0;
             padding: 12px 20px;
             background: rgba(10, 10, 15, 0.95);
             backdrop-filter: blur(10px);
             z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
         .header h1 {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 18px; font-weight: 600;
             background: linear-gradient(90deg, #00d4ff, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         
         .progress { font-size: 14px; color: #888; font-weight: 500; }
         
         .swipe-zone {
-            position: fixed;
-            top: 50px;
-            left: 0;
-            right: 0;
-            bottom: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            overflow: hidden;
+            position: fixed; top: 50px; left: 0; right: 0; bottom: 120px;
+            display: flex; justify-content: center; align-items: center;
+            padding: 10px; overflow: hidden;
         }
         
         .card {
-            width: 100%;
-            max-width: 400px;
-            height: 100%;
+            width: 100%; max-width: 400px; height: 100%;
             background: linear-gradient(145deg, #1e1e2e, #252540);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             position: relative;
-            touch-action: pan-x;
             will-change: transform;
             transition: transform 0.1s ease-out;
         }
         
-        .card.animating {
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        .card.animating { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+        
+        /* Tweet-specific styling */
+        .card.tweet-card {
+            background: linear-gradient(145deg, #15202b, #192734);
+            border: 1px solid rgba(29, 155, 240, 0.2);
         }
         
-        .swipe-indicator {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 15px 20px;
-            border-radius: 10px;
+        .tweet-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .tweet-avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: linear-gradient(135deg, #1d9bf0, #0ea5e9);
+            display: flex; align-items: center; justify-content: center;
             font-size: 20px;
-            font-weight: 700;
-            opacity: 0;
-            transition: opacity 0.15s;
-            pointer-events: none;
-            z-index: 10;
         }
         
-        .swipe-left { left: 15px; background: rgba(245, 158, 11, 0.95); color: #1a1a1a; }
-        .swipe-right { right: 15px; background: rgba(239, 68, 68, 0.95); color: white; }
+        .tweet-author { flex: 1; }
+        .tweet-name { font-weight: 700; font-size: 15px; color: #fff; }
+        .tweet-handle { font-size: 14px; color: #71767b; }
+        .tweet-logo { font-size: 24px; }
         
+        .tweet-content { flex: 1; padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .tweet-text { font-size: 17px; line-height: 1.5; color: #e7e9ea; margin-bottom: 16px; }
+        .tweet-time { font-size: 14px; color: #71767b; margin-bottom: 16px; }
+        
+        .tweet-stats {
+            display: flex; gap: 24px; padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .tweet-stat { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #71767b; }
+        .tweet-stat span { color: #e7e9ea; font-weight: 500; }
+        
+        .tweet-link {
+            display: inline-block; margin-top: 16px; padding: 10px 16px;
+            background: rgba(29, 155, 240, 0.1); border: 1px solid rgba(29, 155, 240, 0.3);
+            border-radius: 20px; color: #1d9bf0; text-decoration: none; font-size: 14px;
+        }
+        
+        /* Article styling */
         .card-header {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            flex-shrink: 0;
+            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
         }
         
         .card-category {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 8px;
+            display: inline-block; padding: 4px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;
         }
         
         .cat-ai { background: linear-gradient(90deg, #7c3aed, #a855f7); color: white; }
@@ -111,30 +107,19 @@
         .cat-tech { background: linear-gradient(90deg, #00d4ff, #0ea5e9); color: #1a1a1a; }
         .cat-markets { background: linear-gradient(90deg, #10b981, #34d399); color: #1a1a1a; }
         .cat-business { background: linear-gradient(90deg, #f43f5e, #fb7185); color: white; }
-        .cat-twitter { background: linear-gradient(90deg, #1d9bf0, #60a5fa); color: white; }
         
         .card-title { font-size: 18px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; color: #fff; }
         .card-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; }
         .card-source { font-weight: 600; color: #00d4ff; }
         
-        .card-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-        }
-        
+        .card-content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
         .card-summary { font-size: 15px; line-height: 1.5; color: #c0c0c0; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .card-full-text { font-size: 14px; line-height: 1.6; color: #a0a0a0; }
         .card-full-text p { margin-bottom: 12px; }
         .card-link { display: inline-block; margin-top: 16px; padding: 10px 16px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 10px; color: #00d4ff; text-decoration: none; font-size: 13px; }
         
         .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            position: fixed; bottom: 0; left: 0; right: 0;
             padding: 12px 20px 25px;
             background: rgba(10, 10, 15, 0.98);
             backdrop-filter: blur(10px);
@@ -144,29 +129,20 @@
         .nav-buttons { display: flex; justify-content: center; gap: 30px; margin-bottom: 8px; }
         
         .nav-btn {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            transition: transform 0.15s;
+            width: 65px; height: 65px; border-radius: 50%; border: none;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 26px; transition: transform 0.15s;
         }
         
         .nav-btn:active { transform: scale(0.9); }
-        .btn-save { background: linear-gradient(145deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
-        .btn-dismiss { background: linear-gradient(145deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .nav-btn:disabled { opacity: 0.3; }
+        .btn-undo { background: linear-gradient(145deg, #6b7280, #4b5563); box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3); }
+        .btn-done { background: linear-gradient(145deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
         .nav-hint { text-align: center; font-size: 11px; color: #555; }
         
         .empty-state { text-align: center; padding: 40px 20px; }
         .empty-state h2 { font-size: 24px; margin-bottom: 12px; background: linear-gradient(90deg, #00d4ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .empty-state p { color: #888; margin-bottom: 20px; }
-        .saved-section { margin-top: 20px; text-align: left; max-height: 300px; overflow-y: auto; }
-        .saved-section h3 { font-size: 14px; color: #f59e0b; margin-bottom: 12px; text-align: center; }
-        .saved-item { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -179,48 +155,38 @@
     
     <div class="footer">
         <div class="nav-buttons">
-            <button class="nav-btn btn-save" onclick="saveCard()">📌</button>
-            <button class="nav-btn btn-dismiss" onclick="dismissCard()">✕</button>
+            <button class="nav-btn btn-undo" id="undoBtn" onclick="undoCard()" disabled>↩️</button>
+            <button class="nav-btn btn-done" onclick="nextCard()">✓</button>
         </div>
-        <div class="nav-hint">← Swipe or tap buttons →</div>
+        <div class="nav-hint">← Swipe or tap: Undo · Done →</div>
     </div>
     
     <script>
         const newsItems = [
-            {id:1,category:'ai',title:'Chinese AI Race Heats Up: Alibaba, Moonshot, Baidu Release New Models',source:'CNBC',time:'Jan 28, 2026',summary:'Chinese companies are accelerating AI model rollouts. Moonshot AI\'s Kimi K2.5 claims to outperform OpenAI, Anthropic, and Google.',fullText:'<p>Chinese companies are accelerating the rollout of new AI models as competition with U.S.-based rivals intensifies.</p><p>Moonshot AI revealed Kimi K2.5 with video-generation and agentic capabilities that outperformed leading U.S. models.</p><p>Alibaba\'s Qwen3-Max-Thinking outperformed rivals on "Humanity\'s Last Exam" benchmark.</p><p>Google DeepMind CEO says China\'s AI models may be just "months" behind the U.S.</p>',link:'https://www.cnbc.com/'},
-            {id:2,category:'ai',title:'Sam Altman Eyes Biometric Social Network — World Token Jumps 27%',source:'CoinDesk',time:'Jan 28, 2026',summary:'OpenAI reportedly planning to use Worldcoin\'s biometric verification to fight bots online.',fullText:'<p>WLD token surged 27% after reports that OpenAI plans to use Worldcoin to fight bots.</p><p>The integration would use iris scans to verify users are real humans.</p><p>This could become the foundation for a new social network where every participant is verified as human.</p>',link:'https://www.coindesk.com/'},
-            {id:3,category:'ai',title:'Ethereum to Roll Out New AI Agents Standard Soon',source:'CoinDesk',time:'Jan 28, 2026',summary:'Ethereum Foundation preparing new standard for AI agents operating on-chain.',fullText:'<p>The new standard will define how AI agents can securely manage wallets and execute transactions.</p><p>Optimism approved OP token buyback plan tied to superchain revenue.</p><p>EF assembling post-quantum security team.</p>',link:'https://www.coindesk.com/'},
-            {id:4,category:'ai',title:'Meta & Microsoft: $115-135B AI Spending Planned',source:'CoinDesk',time:'Jan 28, 2026',summary:'Meta\'s Q4 reveals massive AI infrastructure plans. Bitcoin miners could benefit.',fullText:'<p>Meta capital spending for 2026 projected at $115-135 billion.</p><p>Both companies racing to secure GPU capacity and energy resources.</p><p>Bitcoin miners could benefit as their power infrastructure makes them attractive AI partners.</p>',link:'https://www.coindesk.com/'},
-            {id:5,category:'ai',title:'OpenAI Sora Now Generates 1-3 Videos Simultaneously',source:'Twitter',time:'Jan 28, 2026',summary:'Sora updated to allow multiple video generations at once.',fullText:'<p>OpenAI quietly updated Sora to allow 1-3 simultaneous video generations.</p><p>Addresses main productivity bottleneck for creators.</p>',link:'https://twitter.com/'},
-            {id:6,category:'bitcoin',title:'Tesla Holds 11,509 BTC — Books $239M Loss in Q4',source:'CoinDesk',time:'Jan 28, 2026',summary:'Tesla made no changes to Bitcoin holdings. Stack worth ~$1B at current prices.',fullText:'<p>Tesla\'s 11,509 BTC stack is worth about $1 billion at BTC\'s current price near $89,000.</p><p>Company booked $239M digital asset loss under new fair value accounting rules.</p>',link:'https://www.coindesk.com/'},
-            {id:7,category:'bitcoin',title:'Gold Races to $5,400 Record — Bitcoin Stalls',source:'CoinDesk',time:'Jan 28, 2026',summary:'Gold hits new highs while Bitcoin remains range-bound near $89K.',fullText:'<p>Gold surged above $5,400 following Fed Chair Powell\'s remarks.</p><p>Bitcoin has been trading more like a risk asset than digital gold.</p>',link:'https://www.coindesk.com/'},
-            {id:8,category:'bitcoin',title:'White House to Meet Crypto Execs on Market Structure Bill',source:'CoinDesk',time:'Jan 28, 2026',summary:'Vote delayed over stablecoin regulation disputes.',fullText:'<p>White House convening crypto and banking executives.</p><p>Bill aims to provide regulatory clarity for digital assets.</p>',link:'https://www.coindesk.com/'},
-            {id:9,category:'bitcoin',title:'Buy Bitcoin BEFORE Apple Announces It',source:'Twitter @SimplyBitcoin',time:'Jan 28, 2026',summary:'Speculation mounts that Apple may be preparing a Bitcoin announcement.',fullText:'<p>The Bitcoin community is buzzing with speculation about Apple adding BTC to treasury.</p>',link:'https://twitter.com/'},
-            {id:10,category:'bitcoin',title:'Warren Buffett: "Would Not Buy All 21M BTC for $25"',source:'Twitter',time:'Jan 28, 2026',summary:'Oracle of Omaha doubles down on Bitcoin skepticism.',fullText:'<p>Buffett reiterated his long-standing skepticism of Bitcoin.</p><p>Bitcoin advocates responded: "Good, more for the people who need it."</p>',link:'https://twitter.com/'},
-            {id:11,category:'bitcoin',title:'Fed Holds Rates Steady — Rate Cut Bets Vanish',source:'CoinDesk',time:'Jan 28, 2026',summary:'Early rate cut expectations evaporated. Bitcoin stalls.',fullText:'<p>Federal Reserve held rates steady.</p><p>Higher-for-longer rates reduce appeal of non-yielding assets like Bitcoin.</p>',link:'https://www.coindesk.com/'},
-            {id:12,category:'tech',title:'SpaceX Eyes $1.5 TRILLION IPO — Mid-June Target',source:'The Guardian',time:'Jan 28, 2026',summary:'Musk targets symbolic date coinciding with planetary alignment and his birthday.',fullText:'<p>SpaceX seeking to raise $50 billion at $1.5 trillion valuation.</p><p>Would be bigger than Saudi Aramco\'s $29B IPO in 2019.</p><p>Bank of America, JP Morgan, Goldman Sachs considered for leading roles.</p>',link:'https://www.theguardian.com/'},
-            {id:13,category:'tech',title:'Amazon Announces 16,000 Job Cuts — "Project Dawn"',source:'The Guardian',time:'Jan 28, 2026',summary:'Second major layoff wave in 3 months. Internal email leaked early.',fullText:'<p>Amazon cutting 16,000 jobs to reduce layers and bureaucracy.</p><p>Layoffs referred to internally as "Project Dawn."</p><p>CEO Andy Jassy warned AI could replace many white-collar jobs.</p>',link:'https://www.theguardian.com/'},
-            {id:14,category:'markets',title:'S&P 500 Breaks 7,000 — AI Boom Drives Rally',source:'The Guardian',time:'Jan 28, 2026',summary:'Wall Street milestone. Tech now accounts for nearly half the index.',fullText:'<p>S&P 500 crossed 7,000 for the first time.</p><p>It took 9 months to go from 5,000 to 6,000.</p><p>Tech stocks account for nearly half of the S&P 500.</p>',link:'https://www.theguardian.com/'},
-            {id:15,category:'tech',title:'UK CMA: Publishers Can Opt Out of Google AI Overviews',source:'The Guardian',time:'Jan 28, 2026',summary:'Major win for publishers. Can block scraping without losing search visibility.',fullText:'<p>UK watchdog proposes letting publishers opt out of AI scraping.</p><p>Media orgs have seen traffic drop since Google started posting AI summaries.</p><p>Reuters found executives fear search referrals will fall 43% over 3 years.</p>',link:'https://www.theguardian.com/'},
-            {id:16,category:'tech',title:'MegaETH Mainnet Goes Live Feb 9',source:'CoinDesk',time:'Jan 28, 2026',summary:'Following $450M token sale, promises "real-time" Ethereum scaling.',fullText:'<p>MegaETH promises transaction confirmation in milliseconds.</p><p>Major test of whether technology delivers at scale.</p>',link:'https://www.coindesk.com/'},
-            {id:17,category:'tech',title:'Robinhood CEO: Tokenized Stocks Could Prevent GameStop Freeze',source:'CoinDesk',time:'Jan 28, 2026',summary:'Vlad Tenev blames 2021 halt on "bad infrastructure."',fullText:'<p>Blockchain-based stock trading would enable 24/7 markets and instant settlement.</p><p>Would eliminate clearinghouse bottlenecks that forced trading restrictions.</p>',link:'https://www.coindesk.com/'},
-            {id:18,category:'tech',title:'X Chat Now Supports Cross-Platform E2E Encrypted Calls',source:'Twitter',time:'Jan 28, 2026',summary:'Audio and video calls work between Android and iOS with encryption.',fullText:'<p>X rolled out cross-platform encrypted calling.</p><p>Positions X as more complete communication platform competing with WhatsApp, Signal.</p>',link:'https://twitter.com/'},
-            {id:19,category:'tech',title:'Tesla Optimus Now in Manufacturing Capacity Reports',source:'Twitter',time:'Jan 28, 2026',summary:'First time humanoid robot appears in official capacity planning.',fullText:'<p>Signals Optimus production reaching meaningful scale.</p><p>Musk says Optimus could eventually become more valuable than Tesla\'s car business.</p>',link:'https://twitter.com/'},
-            {id:20,category:'markets',title:'Fairshake Super PAC Hits $193M',source:'CoinDesk',time:'Jan 28, 2026',summary:'Crypto\'s political arm got another $49M. Already outpacing last cycle.',fullText:'<p>Fairshake aided dozens of victories for crypto-friendly candidates.</p><p>Major crypto companies are significant contributors.</p>',link:'https://www.coindesk.com/'},
-            {id:21,category:'markets',title:'Coinbase Rolls Out Prediction Markets to All U.S.',source:'CoinDesk',time:'Jan 28, 2026',summary:'Built with regulated Kalshi, now available nationwide.',fullText:'<p>Prediction markets allow bets on future event outcomes.</p><p>Positions Coinbase beyond just a crypto exchange.</p>',link:'https://www.coindesk.com/'},
-            {id:22,category:'business',title:'UK Government: Banks Must Stop Blocking Crypto Firms',source:'CoinDesk',time:'Jan 28, 2026',summary:'Push to become global digital asset hub.',fullText:'<p>UK officials say banks must treat crypto businesses fairly.</p><p>Many legitimate crypto companies struggled to maintain banking relationships.</p>',link:'https://www.coindesk.com/'},
-            {id:23,category:'markets',title:'Paxos Gold Token Sees Record Inflows',source:'CoinDesk',time:'Jan 28, 2026',summary:'Crypto investors turn to tokenized gold as BTC trades like risk asset.',fullText:'<p>PAXG has seen record inflows amid market uncertainty.</p><p>Highlights debate about Bitcoin\'s role as safe haven vs speculative asset.</p>',link:'https://www.coindesk.com/'},
-            {id:24,category:'twitter',title:'Hoboken: 9 Years Without a Fatal Crash',source:'Steven Pinker RT',time:'Jan 28, 2026',summary:'New Jersey city achieves remarkable safety record through infrastructure.',fullText:'<p>Success through reduced speed limits, protected bike lanes, redesigned intersections.</p><p>Become model for Vision Zero cities.</p>',link:'https://twitter.com/'},
-            {id:25,category:'twitter',title:'JD Vance vs Tammy Duckworth: "Forest Gump vs Isaac Newton"',source:'Twitter @JDVance',time:'Jan 28, 2026',summary:'VP\'s spicy take on Rubio hearing goes viral with 82K+ likes.',fullText:'<p>Elon Musk responded with 😂.</p><p>Highlights combative tone of current political climate.</p>',link:'https://twitter.com/'},
-            {id:26,category:'twitter',title:'Passive Investing Cult: "Like Betting on a Fixed Game"',source:'Twitter',time:'Jan 28, 2026',summary:'Contrarian take on index fund investing gains traction.',fullText:'<p>Thread sparked debate about index funds vs active management.</p><p>S&P 500 increasingly dominated by handful of mega-cap tech stocks.</p>',link:'https://twitter.com/'},
-            {id:27,category:'business',title:'Wall Street Pushes Back on Tokenized Securities Exemptions',source:'CoinDesk',time:'Jan 28, 2026',summary:'Banks press SEC to apply traditional rules to blockchain trading.',fullText:'<p>Banks worried about unlevel playing field with DeFi.</p><p>Argue different rules could create regulatory arbitrage.</p>',link:'https://www.coindesk.com/'},
-            {id:28,category:'business',title:'Strive Raises $225M — Buys More Bitcoin',source:'CoinDesk',time:'Jan 28, 2026',summary:'Stock offering oversubscribed, upsized from $150M.',fullText:'<p>Proceeds to pay off loans and acquire more Bitcoin.</p><p>Suggests continued institutional appetite for BTC exposure.</p>',link:'https://www.coindesk.com/'},
-            {id:29,category:'bitcoin',title:'Peter Thiel-Backed Citrea Aims to Turn BTC into High-Speed Bank',source:'CoinDesk',time:'Jan 28, 2026',summary:'Founders Fund and Galaxy-backed mainnet launching.',fullText:'<p>Aims to unlock Bitcoin-denominated credit markets.</p><p>Treasury-backed stablecoin for USD settlement.</p>',link:'https://www.coindesk.com/'},
-            {id:30,category:'twitter',title:'Brian Feroldi: Warren Buffett Investing Rules',source:'Twitter',time:'Jan 28, 2026',summary:'Visual breakdown of Oracle of Omaha\'s core principles.',fullText:'<p>Focus on businesses you understand, buy at fair prices, think long-term.</p><p>Ironic timing given Buffett\'s BTC comments same day.</p>',link:'https://twitter.com/'}
+            {id:1,type:'article',category:'ai',title:'Chinese AI Race Heats Up: Alibaba, Moonshot, Baidu Release New Models',source:'CNBC',time:'Jan 28, 2026',summary:'Chinese companies are accelerating AI model rollouts. Moonshot AI\'s Kimi K2.5 claims to outperform OpenAI, Anthropic, and Google.',fullText:'<p>Chinese companies are accelerating the rollout of new AI models as competition with U.S.-based rivals intensifies.</p><p>Moonshot AI revealed Kimi K2.5 with video-generation and agentic capabilities.</p><p>Google DeepMind CEO says China\'s AI models may be just "months" behind the U.S.</p>',link:'https://www.cnbc.com/'},
+            {id:2,type:'article',category:'ai',title:'Sam Altman Eyes Biometric Social Network — World Token Jumps 27%',source:'CoinDesk',time:'Jan 28, 2026',summary:'OpenAI reportedly planning to use Worldcoin\'s biometric verification to fight bots online.',fullText:'<p>WLD token surged 27% after reports that OpenAI plans to use Worldcoin to fight bots.</p><p>The integration would use iris scans to verify users are real humans.</p>',link:'https://www.coindesk.com/'},
+            {id:3,type:'article',category:'ai',title:'Meta & Microsoft: $115-135B AI Spending Planned',source:'CoinDesk',time:'Jan 28, 2026',summary:'Meta\'s Q4 reveals massive AI infrastructure plans. Bitcoin miners could benefit.',fullText:'<p>Meta capital spending for 2026 projected at $115-135 billion.</p><p>Bitcoin miners could benefit as their power infrastructure makes them attractive AI partners.</p>',link:'https://www.coindesk.com/'},
+            {id:4,type:'tweet',author:'OpenAI',handle:'@OpenAI',text:'Sora now allows generating 1-3 videos simultaneously! Create multiple variations at once to speed up your creative workflow.',time:'2:34 PM · Jan 28, 2026',likes:'12.4K',retweets:'3.2K',link:'https://twitter.com/OpenAI'},
+            {id:5,type:'article',category:'bitcoin',title:'Tesla Holds 11,509 BTC — Books $239M Loss in Q4',source:'CoinDesk',time:'Jan 28, 2026',summary:'Tesla made no changes to Bitcoin holdings. Stack worth ~$1B at current prices.',fullText:'<p>Tesla\'s 11,509 BTC stack is worth about $1 billion at BTC\'s current price near $89,000.</p>',link:'https://www.coindesk.com/'},
+            {id:6,type:'article',category:'bitcoin',title:'Gold Races to $5,400 Record — Bitcoin Stalls',source:'CoinDesk',time:'Jan 28, 2026',summary:'Gold hits new highs while Bitcoin remains range-bound near $89K.',fullText:'<p>Gold surged above $5,400 following Fed Chair Powell\'s remarks.</p><p>Bitcoin has been trading more like a risk asset than digital gold.</p>',link:'https://www.coindesk.com/'},
+            {id:7,type:'tweet',author:'Simply Bitcoin',handle:'@SimplyBitcoin',text:'Buy Bitcoin BEFORE Apple announces it.\n\nYou\'ve been warned. 🍎₿',time:'11:22 AM · Jan 28, 2026',likes:'8.7K',retweets:'2.1K',link:'https://twitter.com/SimplyBitcoin'},
+            {id:8,type:'tweet',author:'Simply Bitcoin',handle:'@SimplyBitcoin',text:'Warren Buffett: "I would not buy all 21 million Bitcoin for $25"\n\nGood. More for the people who actually need it.',time:'10:45 AM · Jan 28, 2026',likes:'15.2K',retweets:'4.8K',link:'https://twitter.com/SimplyBitcoin'},
+            {id:9,type:'article',category:'tech',title:'SpaceX Eyes $1.5 TRILLION IPO — Mid-June Target',source:'The Guardian',time:'Jan 28, 2026',summary:'Musk targets symbolic date coinciding with planetary alignment and his birthday.',fullText:'<p>SpaceX seeking to raise $50 billion at $1.5 trillion valuation.</p><p>Would be bigger than Saudi Aramco\'s $29B IPO in 2019.</p>',link:'https://www.theguardian.com/'},
+            {id:10,type:'article',category:'tech',title:'Amazon Announces 16,000 Job Cuts — "Project Dawn"',source:'The Guardian',time:'Jan 28, 2026',summary:'Second major layoff wave in 3 months. Internal email leaked early.',fullText:'<p>Amazon cutting 16,000 jobs to reduce layers and bureaucracy.</p><p>Layoffs referred to internally as "Project Dawn."</p>',link:'https://www.theguardian.com/'},
+            {id:11,type:'article',category:'markets',title:'S&P 500 Breaks 7,000 — AI Boom Drives Rally',source:'The Guardian',time:'Jan 28, 2026',summary:'Wall Street milestone. Tech now accounts for nearly half the index.',fullText:'<p>S&P 500 crossed 7,000 for the first time.</p><p>Tech stocks account for nearly half of the S&P 500.</p>',link:'https://www.theguardian.com/'},
+            {id:12,type:'article',category:'tech',title:'UK CMA: Publishers Can Opt Out of Google AI Overviews',source:'The Guardian',time:'Jan 28, 2026',summary:'Major win for publishers. Can block scraping without losing search visibility.',fullText:'<p>UK watchdog proposes letting publishers opt out of AI scraping.</p>',link:'https://www.theguardian.com/'},
+            {id:13,type:'tweet',author:'JD Vance',handle:'@JDVance',text:'Watching Tammy Duckworth obsessively interrupt Marco Rubio during this hearing is like watching Forest Gump argue with Isaac Newton.',time:'3:15 PM · Jan 28, 2026',likes:'82.4K',retweets:'9.1K',link:'https://twitter.com/JDVance'},
+            {id:14,type:'article',category:'tech',title:'Robinhood CEO: Tokenized Stocks Could Prevent GameStop Freeze',source:'CoinDesk',time:'Jan 28, 2026',summary:'Vlad Tenev blames 2021 halt on "bad infrastructure."',fullText:'<p>Blockchain-based stock trading would enable 24/7 markets and instant settlement.</p>',link:'https://www.coindesk.com/'},
+            {id:15,type:'tweet',author:'Whole Mars Catalog',handle:'@wholeMars',text:'Tesla manufacturing capacity report now includes Optimus for the first time.\n\nThis is significant.',time:'4:22 PM · Jan 28, 2026',likes:'5.6K',retweets:'1.2K',link:'https://twitter.com/wholeMars'},
+            {id:16,type:'article',category:'markets',title:'Fairshake Super PAC Hits $193M',source:'CoinDesk',time:'Jan 28, 2026',summary:'Crypto\'s political arm got another $49M. Already outpacing last cycle.',fullText:'<p>Fairshake aided dozens of victories for crypto-friendly candidates.</p>',link:'https://www.coindesk.com/'},
+            {id:17,type:'article',category:'business',title:'UK Government: Banks Must Stop Blocking Crypto Firms',source:'CoinDesk',time:'Jan 28, 2026',summary:'Push to become global digital asset hub.',fullText:'<p>UK officials say banks must treat crypto businesses fairly.</p>',link:'https://www.coindesk.com/'},
+            {id:18,type:'tweet',author:'Steven Pinker',handle:'@sapinker',text:'Hoboken, NJ: 9 years without a single fatal traffic crash.\n\nHow they did it: reduced speed limits, protected bike lanes, expanded pedestrian zones, redesigned intersections.\n\nIt\'s possible.',time:'9:30 AM · Jan 28, 2026',likes:'24.1K',retweets:'6.3K',link:'https://twitter.com/sapinker'},
+            {id:19,type:'article',category:'bitcoin',title:'Peter Thiel-Backed Citrea Launches Bitcoin Banking',source:'CoinDesk',time:'Jan 28, 2026',summary:'Founders Fund and Galaxy-backed mainnet aims to turn BTC into high-speed bank.',fullText:'<p>Aims to unlock Bitcoin-denominated credit markets with Treasury-backed stablecoin.</p>',link:'https://www.coindesk.com/'},
+            {id:20,type:'tweet',author:'Brian Feroldi',handle:'@BrianFeroldi',text:'Warren Buffett\'s investing rules:\n\n1. Never lose money\n2. Never forget rule #1\n3. Buy businesses you understand\n4. Buy at fair prices\n5. Think long-term\n6. Be greedy when others are fearful\n\nTimeless wisdom.',time:'8:15 AM · Jan 28, 2026',likes:'18.7K',retweets:'4.2K',link:'https://twitter.com/BrianFeroldi'}
         ];
         
         let currentIndex = 0;
-        let savedItems = [];
+        let history = [];
         let startX = 0, currentX = 0, isDragging = false;
         
         function renderCards() {
@@ -228,44 +194,63 @@
             zone.innerHTML = '';
             
             if (currentIndex >= newsItems.length) {
-                renderEmptyState();
+                zone.innerHTML = '<div class="empty-state"><h2>All caught up! 🎉</h2><p>You\'ve read all '+newsItems.length+' stories</p></div>';
                 return;
             }
             
             const item = newsItems[currentIndex];
             const card = document.createElement('div');
-            card.className = 'card';
             card.id = 'currentCard';
-            card.innerHTML = `
-                <div class="swipe-indicator swipe-left" id="saveIndicator">📌 SAVE</div>
-                <div class="swipe-indicator swipe-right" id="skipIndicator">✕ SKIP</div>
-                <div class="card-header">
-                    <span class="card-category cat-${item.category}">${item.category}</span>
-                    <h2 class="card-title">${item.title}</h2>
-                    <div class="card-meta">
-                        <span class="card-source">${item.source}</span>
-                        <span>•</span>
-                        <span>${item.time}</span>
+            
+            if (item.type === 'tweet') {
+                card.className = 'card tweet-card';
+                card.innerHTML = `
+                    <div class="tweet-header">
+                        <div class="tweet-avatar">𝕏</div>
+                        <div class="tweet-author">
+                            <div class="tweet-name">${item.author}</div>
+                            <div class="tweet-handle">${item.handle}</div>
+                        </div>
+                        <div class="tweet-logo">𝕏</div>
                     </div>
-                </div>
-                <div class="card-content" id="cardContent">
-                    <p class="card-summary">${item.summary}</p>
-                    <div class="card-full-text">${item.fullText}</div>
-                    <a href="${item.link}" target="_blank" class="card-link">Read Original →</a>
-                </div>
-            `;
+                    <div class="tweet-content">
+                        <div class="tweet-text">${item.text.replace(/\n/g, '<br>')}</div>
+                        <div class="tweet-time">${item.time}</div>
+                        <div class="tweet-stats">
+                            <div class="tweet-stat">❤️ <span>${item.likes}</span></div>
+                            <div class="tweet-stat">🔁 <span>${item.retweets}</span></div>
+                        </div>
+                        <a href="${item.link}" target="_blank" class="tweet-link">View on 𝕏 →</a>
+                    </div>
+                `;
+            } else {
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-category cat-${item.category}">${item.category}</span>
+                        <h2 class="card-title">${item.title}</h2>
+                        <div class="card-meta">
+                            <span class="card-source">${item.source}</span>
+                            <span>•</span>
+                            <span>${item.time}</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-summary">${item.summary}</p>
+                        <div class="card-full-text">${item.fullText}</div>
+                        <a href="${item.link}" target="_blank" class="card-link">Read Original →</a>
+                    </div>
+                `;
+            }
+            
             zone.appendChild(card);
             updateProgress();
             setupSwipe(card);
+            document.getElementById('undoBtn').disabled = history.length === 0;
         }
         
         function setupSwipe(card) {
-            const content = document.getElementById('cardContent');
-            
             card.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.card-content') && content.scrollHeight > content.clientHeight) {
-                    return;
-                }
                 startX = e.touches[0].clientX;
                 isDragging = true;
                 card.classList.remove('animating');
@@ -275,19 +260,6 @@
                 if (!isDragging) return;
                 currentX = e.touches[0].clientX - startX;
                 card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.03}deg)`;
-                
-                const saveInd = document.getElementById('saveIndicator');
-                const skipInd = document.getElementById('skipIndicator');
-                if (currentX < -30) {
-                    saveInd.style.opacity = Math.min(Math.abs(currentX) / 80, 1);
-                    skipInd.style.opacity = 0;
-                } else if (currentX > 30) {
-                    skipInd.style.opacity = Math.min(currentX / 80, 1);
-                    saveInd.style.opacity = 0;
-                } else {
-                    saveInd.style.opacity = 0;
-                    skipInd.style.opacity = 0;
-                }
             }, { passive: true });
             
             card.addEventListener('touchend', () => {
@@ -295,53 +267,40 @@
                 isDragging = false;
                 
                 if (currentX < -80) {
-                    animateOut('left');
+                    undoCard();
                 } else if (currentX > 80) {
-                    animateOut('right');
+                    nextCard();
                 } else {
                     card.classList.add('animating');
                     card.style.transform = '';
-                    document.getElementById('saveIndicator').style.opacity = 0;
-                    document.getElementById('skipIndicator').style.opacity = 0;
                 }
                 currentX = 0;
             });
         }
         
-        function animateOut(direction) {
+        function nextCard() {
             const card = document.getElementById('currentCard');
-            if (!card) return;
+            if (!card || currentIndex >= newsItems.length) return;
             
+            history.push(currentIndex);
             card.classList.add('animating');
-            const xOut = direction === 'left' ? -400 : 400;
-            card.style.transform = `translateX(${xOut}px) rotate(${xOut * 0.05}deg)`;
+            card.style.transform = 'translateX(400px) rotate(15deg)';
             card.style.opacity = '0';
             
-            setTimeout(() => {
-                if (direction === 'left') {
-                    savedItems.push(newsItems[currentIndex]);
-                }
-                currentIndex++;
-                renderCards();
-            }, 250);
+            setTimeout(() => { currentIndex++; renderCards(); }, 250);
         }
         
-        function renderEmptyState() {
-            const zone = document.getElementById('swipeZone');
-            let savedHtml = savedItems.length > 0 ? `
-                <div class="saved-section">
-                    <h3>📌 Saved (${savedItems.length})</h3>
-                    ${savedItems.map(item => `<div class="saved-item">${item.title}</div>`).join('')}
-                </div>
-            ` : '';
+        function undoCard() {
+            if (history.length === 0) return;
             
-            zone.innerHTML = `
-                <div class="empty-state">
-                    <h2>All caught up! 🎉</h2>
-                    <p>You've read all ${newsItems.length} stories</p>
-                    ${savedHtml}
-                </div>
-            `;
+            const card = document.getElementById('currentCard');
+            if (card) {
+                card.classList.add('animating');
+                card.style.transform = 'translateX(-400px) rotate(-15deg)';
+                card.style.opacity = '0';
+            }
+            
+            setTimeout(() => { currentIndex = history.pop(); renderCards(); }, 250);
         }
         
         function updateProgress() {
@@ -349,12 +308,9 @@
             document.getElementById('total').textContent = newsItems.length;
         }
         
-        function saveCard() { animateOut('left'); }
-        function dismissCard() { animateOut('right'); }
-        
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') saveCard();
-            else if (e.key === 'ArrowRight') dismissCard();
+            if (e.key === 'ArrowLeft') undoCard();
+            else if (e.key === 'ArrowRight') nextCard();
         });
         
         renderCards();

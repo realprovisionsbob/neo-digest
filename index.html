@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>⚡️ Neo's Twitter Digest</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+        .header {
+            text-align: center;
+            padding: 16px;
+            background: rgba(0,0,0,0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        .header h1 { font-size: 1.2em; color: #4a90d9; }
+        .header .count { color: #888; font-size: 0.85em; margin-top: 4px; }
+        
+        .card-container {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+        
+        .card {
+            position: absolute;
+            width: calc(100% - 32px);
+            max-width: 400px;
+            background: linear-gradient(145deg, #1e1e2f, #252538);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            cursor: grab;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            user-select: none;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        .card:active { cursor: grabbing; }
+        .card.swiping { transition: none; }
+        .card.gone-left {
+            transform: translateX(-150%) rotate(-30deg) !important;
+            opacity: 0;
+        }
+        .card.gone-right {
+            transform: translateX(150%) rotate(30deg) !important;
+            opacity: 0;
+        }
+        
+        .card-stack .card:nth-child(2) { transform: scale(0.95) translateY(10px); opacity: 0.7; }
+        .card-stack .card:nth-child(3) { transform: scale(0.9) translateY(20px); opacity: 0.5; }
+        .card-stack .card:nth-child(n+4) { transform: scale(0.85) translateY(30px); opacity: 0; }
+        
+        .author {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        .author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a90d9, #f0a500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .author-info { flex: 1; }
+        .author-name { font-weight: 600; color: #fff; font-size: 1em; }
+        .author-handle { color: #888; font-size: 0.85em; }
+        
+        .tweet-time {
+            color: #666;
+            font-size: 0.8em;
+            margin-bottom: 12px;
+        }
+        
+        .tweet-text {
+            font-size: 1.05em;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            word-wrap: break-word;
+        }
+        .tweet-text a { color: #4a90d9; }
+        
+        .tweet-media {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .tweet-media img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            color: #888;
+            font-size: 0.9em;
+            padding-top: 12px;
+            border-top: 1px solid #333;
+        }
+        .stats span { display: flex; align-items: center; gap: 6px; }
+        
+        .view-tweet {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(74, 144, 217, 0.2);
+            border-radius: 8px;
+            color: #4a90d9;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .view-tweet:hover { background: rgba(74, 144, 217, 0.3); }
+        
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 16px;
+            background: rgba(0,0,0,0.5);
+        }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid;
+            background: transparent;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .control-btn.left {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+        .control-btn.left:hover {
+            background: #f39c12;
+            color: #000;
+        }
+        .control-btn.right {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+        .control-btn.right:hover {
+            background: #27ae60;
+            color: #fff;
+        }
+        
+        .hint {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3em;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .hint.left { left: 20px; color: #f39c12; }
+        .hint.right { right: 20px; color: #27ae60; }
+        
+        .done-message {
+            text-align: center;
+            padding: 40px;
+        }
+        .done-message h2 { color: #27ae60; margin-bottom: 16px; }
+        .done-message p { color: #888; }
+        
+        .swipe-indicator {
+            position: absolute;
+            top: 20px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .swipe-indicator.later {
+            left: 20px;
+            background: #f39c12;
+            color: #000;
+        }
+        .swipe-indicator.done {
+            right: 20px;
+            background: #27ae60;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡️ Neo's Twitter Digest</h1>
+        <div class="count"><span id="remaining">0</span> tweets remaining • Jan 28, 2026 (16:47)</div>
+    </div>
+    
+    <div class="card-container">
+        <div class="hint left">↩️</div>
+        <div class="hint right">✓</div>
+        <div id="card-stack" class="card-stack"></div>
+    </div>
+    
+    <div class="controls">
+        <button class="control-btn left" onclick="swipeLeft()" title="Save for later">↩️</button>
+        <button class="control-btn right" onclick="swipeRight()" title="Done">✓</button>
+    </div>
+
+    <script>
+        const tweets = [
+            {
+                id: "2016670298746098077",
+                author: "Elon Musk",
+                handle: "@elonmusk",
+                text: "RT @MELANIATRUMP: MELANIA, a film\n1.30.2026\n@NYSE NYC",
+                time: "Jan 28, 2026 (16:47) • 4:30 PM",
+                replies: 0,
+                retweets: 242,
+                likes: 0,
+                hasMedia: true,
+                mediaUrl: "https://pbs.twimg.com/amplify_video_thumb/2016662899754672128/img/tljDbEvy2bQZnv3S.jpg",
+                url: "https://twitter.com/elonmusk/status/2016670298746098077"
+            },
+            {
+                id: "2016668920678134145",
+                author: "Chris",
+                handle: "@chatgpt21",
+                text: "🚨Tesla Roadster Unveil Coming in April!\n\nI listened to the entire Q4 2025 Earnings Call so you don't have too. Elon dropped massive updates:\n\n• Next-Gen Roadster: Unveiling April 2026\n• Model S & X: Production stopping Q2\n• Optimus: Converting to 1M robots/year line\n• Robotaxi: 500+ units, no chase cars in Austin!\n• Cybercab: NO steering wheel or pedals\n• Tesla plans \"Terafab\" for chip production\n• $20B+ capex in 2026",
+                time: "Jan 28, 2026 (16:47) • 4:25 PM",
+                replies: 0,
+                retweets: 0,
+                likes: 3,
+                hasMedia: true,
+                mediaUrl: "https://pbs.twimg.com/media/G_ylr6kbUAUhyX-.jpg",
+                url: "https://twitter.com/chatgpt21/status/2016668920678134145"
+            },
+            {
+                id: "2016670137378873828",
+                author: "Samson Mow",
+                handle: "@Excellion",
+                text: "RT @saylor: Bitcoin is the endgame.",
+                time: "Jan 28, 2026 (16:47) • 4:30 PM",
+                replies: 0,
+                retweets: 933,
+                likes: 0,
+                hasMedia: true,
+                mediaUrl: "https://pbs.twimg.com/media/G_wcOk6WoAAZbM-.jpg",
+                url: "https://twitter.com/Excellion/status/2016670137378873828"
+            },
+            {
+                id: "2016669581876646038",
+                author: "Patrick Bet-David",
+                handle: "@patrickbetdavid",
+                text: "Socialism never changes.\n\nThey promise you free things until they get elected.\n\nThey blame the rich for your financial struggles.\n\nMajority buys into it.\n\nThe rich leave the state.\n\nThen they raises taxes on YOU.\n\nFinally, the middle class gets DESTROYED.",
+                time: "Jan 28, 2026 (16:47) • 4:27 PM",
+                replies: 22,
+                retweets: 24,
+                likes: 149,
+                hasMedia: false,
+                url: "https://twitter.com/patrickbetdavid/status/2016669581876646038"
+            },
+            {
+                id: "2016667797850395050",
+                author: "Neil Jacobs",
+                handle: "@NeilJacobs",
+                text: "Bitcoin will surpass gold's market cap. Not a doubt in my mind.",
+                time: "Jan 28, 2026 (16:47) • 4:20 PM",
+                replies: 2,
+                retweets: 3,
+                likes: 8,
+                hasMedia: false,
+                url: "https://twitter.com/NeilJacobs/status/2016667797850395050"
+            },
+            {
+                id: "2016670199114547361",
+                author: "NVK",
+                handle: "@nvk",
+                text: "RT @Eric_BIGfund: Fed independence dies the moment the Chair plays politics. See: Jerome Powell.",
+                time: "Jan 28, 2026 (16:47) • 4:30 PM",
+                replies: 0,
+                retweets: 6,
+                likes: 0,
+                hasMedia: false,
+                url: "https://twitter.com/nvk/status/2016670199114547361"
+            },
+            {
+                id: "2016669683064459558",
+                author: "Aaron Ng",
+                handle: "@localghost",
+                text: "Whoa, Alexandre is selling eggs now.\n\nGoing to try this out just because their milk is so great. Closest thing I've had to Hokkaido dairy in the US.",
+                time: "Jan 28, 2026 (16:47) • 4:28 PM",
+                replies: 0,
+                retweets: 0,
+                likes: 0,
+                hasMedia: true,
+                mediaUrl: "https://pbs.twimg.com/media/G_ymY3LbUAA3oqX.jpg",
+                url: "https://twitter.com/localghost/status/2016669683064459558"
+            },
+            {
+                id: "2016668871168799049",
+                author: "Cernovich",
+                handle: "@Cernovich",
+                text: "Neo-Bolsheviks are prepared to die as long as it generates sympathetic media for their kid. This is an Islamic terrorist level mindset. We have to be honest about what is going on.",
+                time: "Jan 28, 2026 (16:47) • 4:25 PM",
+                replies: 5,
+                retweets: 15,
+                likes: 113,
+                hasMedia: false,
+                url: "https://twitter.com/Cernovich/status/2016668871168799049"
+            },
+            {
+                id: "2016669131324739994",
+                author: "Tony Zhao",
+                handle: "@tonyzzhao",
+                text: "We are lucky to have you Hojung. Welcome to the team!\n\n(Quote: Excited to share that I've joined @sundayrobotics as a full-stack robotics research engineer!)",
+                time: "Jan 28, 2026 (16:47) • 4:26 PM",
+                replies: 1,
+                retweets: 0,
+                likes: 9,
+                hasMedia: false,
+                url: "https://twitter.com/tonyzzhao/status/2016669131324739994"
+            },
+            {
+                id: "2016669126387737023",
+                author: "AK",
+                handle: "@_akhaliq",
+                text: "Youtu-VL\n\nUnleashing Visual Potential via Unified Vision-Language Supervision\nhttps://arxiv.org/...",
+                time: "Jan 28, 2026 (16:47) • 4:26 PM",
+                replies: 2,
+                retweets: 2,
+                likes: 5,
+                hasMedia: false,
+                url: "https://twitter.com/_akhaliq/status/2016669126387737023"
+            },
+            {
+                id: "2016670099806310843",
+                author: "Samson Mow",
+                handle: "@Excellion",
+                text: "RT @saylor: We buy real bitcoin. We audit our custodians. We don't rehypothecate. You shouldn't either.",
+                time: "Jan 28, 2026 (16:47) • 4:29 PM",
+                replies: 0,
+                retweets: 623,
+                likes: 0,
+                hasMedia: false,
+                url: "https://twitter.com/Excellion/status/2016670099806310843"
+            },
+            {
+                id: "2016667765546131941",
+                author: "Cernovich",
+                handle: "@Cernovich",
+                text: "In 2012, California has a ballot measure to increase the top tax rate for millionaire's. It passed 55 to 45.\n\nThis is why anyone playing footsie with amnesty while leaving the state are clueless.\n\nIf there's a federal amnesty, then there will be a billionaire tax.",
+                time: "Jan 28, 2026 (16:47) • 4:20 PM",
+                replies: 1,
+                retweets: 7,
+                likes: 44,
+                hasMedia: true,
+                mediaUrl: "https://pbs.twimg.com/media/G_ykW8CbUAAtsOh.jpg",
+                url: "https://twitter.com/Cernovich/status/2016667765546131941"
+            },
+            {
+                id: "2016667974141419586",
+                author: "Samson Mow",
+                handle: "@Excellion",
+                text: "RT @BraginRights: Claude Code thinks I won't notice him sneaking in a proper fix while pretending it's just adding some logging.",
+                time: "Jan 28, 2026 (16:47) • 4:21 PM",
+                replies: 0,
+                retweets: 3,
+                likes: 0,
+                hasMedia: false,
+                url: "https://twitter.com/Excellion/status/2016667974141419586"
+            },
+            {
+                id: "2016670194673078699",
+                author: "Wrath Of Gnon",
+                handle: "@wrathofgnon",
+                text: "\"She had, so to speak, personal control over reality.\"\n– Milan Kundera",
+                time: "Jan 28, 2026 (16:47) • 4:30 PM",
+                replies: 0,
+                retweets: 265,
+                likes: 0,
+                hasMedia: true,
+                mediaUrl: "https://pbs.twimg.com/media/CVWJ1hIUAAAojDQ.jpg",
+                url: "https://twitter.com/wrathofgnon/status/2016670194673078699"
+            }
+        ];
+
+        let cardStack = [];
+        let currentCard = null;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        function init() {
+            cardStack = [...tweets];
+            renderCards();
+            updateCount();
+        }
+
+        function renderCards() {
+            const container = document.getElementById('card-stack');
+            container.innerHTML = '';
+            
+            if (cardStack.length === 0) {
+                container.innerHTML = `
+                    <div class="done-message">
+                        <h2>✨ All caught up!</h2>
+                        <p>You've gone through all ${tweets.length} tweets.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render top 3 cards (reversed so first is on top)
+            const visibleCards = cardStack.slice(0, 3).reverse();
+            visibleCards.forEach((tweet, i) => {
+                const card = createCard(tweet, i === visibleCards.length - 1);
+                container.appendChild(card);
+            });
+        }
+
+        function createCard(tweet, isTop) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="swipe-indicator later">LATER</div>
+                <div class="swipe-indicator done">DONE ✓</div>
+                <div class="author">
+                    <div class="author-avatar">${tweet.author.charAt(0)}</div>
+                    <div class="author-info">
+                        <div class="author-name">${tweet.author}</div>
+                        <div class="author-handle">${tweet.handle}</div>
+                    </div>
+                </div>
+                <div class="tweet-time">${tweet.time}</div>
+                <div class="tweet-text">${tweet.text.replace(/\n/g, '<br>')}</div>
+                ${tweet.hasMedia ? `<div class="tweet-media"><img src="${tweet.mediaUrl}" alt="Tweet media" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                <div class="stats">
+                    <span>💬 ${tweet.replies}</span>
+                    <span>🔁 ${tweet.retweets}</span>
+                    <span>❤️ ${tweet.likes}</span>
+                </div>
+                <a href="${tweet.url}" target="_blank" class="view-tweet">View on X →</a>
+            `;
+
+            if (isTop) {
+                card.addEventListener('touchstart', handleTouchStart, { passive: true });
+                card.addEventListener('touchmove', handleTouchMove, { passive: true });
+                card.addEventListener('touchend', handleTouchEnd);
+                card.addEventListener('mousedown', handleMouseDown);
+            }
+
+            return card;
+        }
+
+        function handleTouchStart(e) {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            currentCard = e.target.closest('.card');
+            currentCard.classList.add('swiping');
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging || !currentCard) return;
+            currentX = e.touches[0].clientX - startX;
+            updateCardPosition();
+        }
+
+        function handleTouchEnd() {
+            if (!currentCard) return;
+            finishSwipe();
+        }
+
+        function handleMouseDown(e) {
+            startX = e.clientX;
+            isDragging = true;
+            currentCard = e.target.closest('.card');
+            currentCard.classList.add('swiping');
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging || !currentCard) return;
+            currentX = e.clientX - startX;
+            updateCardPosition();
+        }
+
+        function handleMouseUp() {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            if (!currentCard) return;
+            finishSwipe();
+        }
+
+        function updateCardPosition() {
+            if (!currentCard) return;
+            const rotation = currentX * 0.1;
+            currentCard.style.transform = `translateX(${currentX}px) rotate(${rotation}deg)`;
+            
+            // Show indicators
+            const laterIndicator = currentCard.querySelector('.swipe-indicator.later');
+            const doneIndicator = currentCard.querySelector('.swipe-indicator.done');
+            
+            if (currentX < -50) {
+                laterIndicator.style.opacity = Math.min(1, Math.abs(currentX) / 100);
+                doneIndicator.style.opacity = 0;
+            } else if (currentX > 50) {
+                doneIndicator.style.opacity = Math.min(1, currentX / 100);
+                laterIndicator.style.opacity = 0;
+            } else {
+                laterIndicator.style.opacity = 0;
+                doneIndicator.style.opacity = 0;
+            }
+        }
+
+        function finishSwipe() {
+            currentCard.classList.remove('swiping');
+            
+            if (currentX < -100) {
+                // Swipe left - move to bottom
+                swipeLeftAction();
+            } else if (currentX > 100) {
+                // Swipe right - dismiss
+                swipeRightAction();
+            } else {
+                // Return to center
+                currentCard.style.transform = '';
+                const indicators = currentCard.querySelectorAll('.swipe-indicator');
+                indicators.forEach(i => i.style.opacity = 0);
+            }
+            
+            isDragging = false;
+            currentCard = null;
+            currentX = 0;
+        }
+
+        function swipeLeft() {
+            const card = document.querySelector('.card-stack .card:last-child');
+            if (card) {
+                card.classList.add('gone-left');
+                setTimeout(() => swipeLeftAction(), 300);
+            }
+        }
+
+        function swipeRight() {
+            const card = document.querySelector('.card-stack .card:last-child');
+            if (card) {
+                card.classList.add('gone-right');
+                setTimeout(() => swipeRightAction(), 300);
+            }
+        }
+
+        function swipeLeftAction() {
+            if (cardStack.length > 0) {
+                const tweet = cardStack.shift();
+                cardStack.push(tweet); // Move to bottom
+                renderCards();
+                updateCount();
+            }
+        }
+
+        function swipeRightAction() {
+            if (cardStack.length > 0) {
+                cardStack.shift(); // Remove from stack
+                renderCards();
+                updateCount();
+            }
+        }
+
+        function updateCount() {
+            document.getElementById('remaining').textContent = cardStack.length;
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') swipeLeft();
+            if (e.key === 'ArrowRight') swipeRight();
+        });
+
+        init();
+    </script>
+</body>
+</html>

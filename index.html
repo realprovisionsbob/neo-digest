@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Daily Digest - Jan 29, 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: pan-x;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            background: linear-gradient(to bottom, rgba(10,10,10,1) 0%, rgba(10,10,10,0) 100%);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .date {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .card-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 70px 16px 30px;
+        }
+        
+        .card {
+            width: 100%;
+            max-width: 400px;
+            max-height: 100%;
+            background: #1a1a1a;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+            transition: transform 0.1s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card.dragging {
+            cursor: grabbing;
+            transition: none;
+        }
+        
+        .card-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .category {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #2563eb;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .category.ai { background: #7c3aed; }
+        .category.bitcoin { background: #f59e0b; }
+        .category.tech { background: #2563eb; }
+        .category.business { background: #059669; }
+        .category.politics { background: #dc2626; }
+        .category.crypto { background: #f59e0b; }
+        
+        .headline {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+        
+        .meta {
+            display: flex;
+            gap: 12px;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        
+        .summary {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+        
+        .full-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #999;
+            border-top: 1px solid #333;
+            padding-top: 16px;
+        }
+        
+        .link {
+            display: inline-block;
+            margin-top: 16px;
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        /* Tweet card styles */
+        .tweet-card .card-content {
+            padding: 20px;
+        }
+        
+        .tweet-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        
+        .tweet-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .tweet-author {
+            flex: 1;
+        }
+        
+        .tweet-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        
+        .tweet-handle {
+            color: #71767b;
+            font-size: 14px;
+        }
+        
+        .tweet-x-logo {
+            font-size: 20px;
+            color: #fff;
+        }
+        
+        .tweet-text {
+            font-size: 17px;
+            line-height: 1.5;
+            margin-bottom: 14px;
+            white-space: pre-wrap;
+        }
+        
+        .tweet-time {
+            color: #71767b;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+        
+        .tweet-stats {
+            display: flex;
+            gap: 24px;
+            padding-top: 14px;
+            border-top: 1px solid #2f3336;
+        }
+        
+        .tweet-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #71767b;
+            font-size: 14px;
+        }
+        
+        .tweet-link {
+            display: block;
+            margin-top: 16px;
+            padding: 12px;
+            background: #1d9bf0;
+            color: #fff;
+            text-align: center;
+            border-radius: 24px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* Swipe indicators */
+        .swipe-indicator {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.15s;
+            pointer-events: none;
+            z-index: 200;
+        }
+        
+        .swipe-indicator.left {
+            left: 20px;
+            color: #f59e0b;
+        }
+        
+        .swipe-indicator.right {
+            right: 20px;
+            color: #22c55e;
+        }
+        
+        .swipe-indicator.visible {
+            opacity: 1;
+        }
+        
+        /* Done screen */
+        .done-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .done-screen.active {
+            display: flex;
+        }
+        
+        .done-emoji {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+        
+        .done-text {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .done-sub {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #555;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="progress"><span id="current">1</span>/<span id="total">30</span></div>
+        <div class="date">Jan 29, 2026</div>
+    </div>
+    
+    <div class="swipe-indicator left">↩️ UNDO</div>
+    <div class="swipe-indicator right">✓ DONE</div>
+    
+    <div class="card-container" id="cardContainer">
+        <!-- Cards injected by JS -->
+    </div>
+    
+    <div class="done-screen" id="doneScreen">
+        <div class="done-emoji">🎉</div>
+        <div class="done-text">All caught up!</div>
+        <div class="done-sub">You've read today's digest</div>
+    </div>
+    
+    <div class="instructions">← Undo • Swipe → Done</div>
+
+    <script>
+        const items = [
+            // AI/AGENTS - Top priority
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'SpaceX in Early Talks to Merge with xAI Ahead of Major IPO',
+                source: 'Twitter Trending',
+                time: '2 hours ago',
+                summary: 'Elon Musk\'s SpaceX is reportedly in early discussions to merge with xAI before this year\'s highly anticipated IPO. The move would consolidate Musk\'s space and AI ambitions under one roof.',
+                fullText: 'The potential merger signals a convergence of Musk\'s various ventures. With xAI\'s Grok models and SpaceX\'s Starlink infrastructure, the combined entity could enable AI satellites in space and revolutionize both industries.',
+                link: 'https://x.com/stocktalkweekly/status/2016944417567834619'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'Apple Acquires Israeli AI Startup Q.ai for Nearly $2 Billion',
+                source: 'Twitter Trending',
+                time: '3 hours ago',
+                summary: 'Apple has made its second-largest acquisition ever, purchasing Israeli AI startup Q.ai for approximately $2 billion to power future wearables.',
+                fullText: 'The acquisition positions Apple to significantly enhance AI capabilities in its wearable devices. Q.ai specializes in edge AI processing, which could enable more sophisticated on-device intelligence for Apple Watch and future AR/VR products.',
+                link: 'https://x.com/iClarified/status/2016937523591667968'
+            },
+            {
+                type: 'tweet',
+                author: 'Cursor',
+                handle: '@cursor_ai',
+                text: 'We\'re proposing an open standard for tracing agent conversations to the code they generate. It\'s interoperable with any coding agent.',
+                time: 'Today',
+                likes: 420,
+                retweets: 63,
+                link: 'https://x.com/cursor_ai'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'Marc Andreessen: "The Real AI Boom Hasn\'t Even Started Yet"',
+                source: 'Lenny\'s Podcast',
+                time: 'Today',
+                summary: 'In a new interview, a16z co-founder Marc Andreessen argues that despite massive investment and hype, we\'re still in the early innings of the AI revolution.',
+                fullText: 'Andreessen discusses how current AI applications are just scratching the surface. The real transformation will come when AI agents handle entire workflows autonomously, moving from demos to day-to-day practice.',
+                link: 'https://www.lennysnewsletter.com/p/marc-andreessen-the-real-ai-boom'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'Matic Robots Raises $60M to Scale Home Cleaning Bot',
+                source: 'Twitter Trending',
+                time: '4 hours ago',
+                summary: 'Matic Robots announced $60 million in funding to scale their useful home cleaning robot, focusing on practical applications over impressive demos.',
+                fullText: 'The company\'s approach: "We didn\'t ask what\'s the most impressive robot we can demo? We asked what\'s the most useful robot we can build." The funding will accelerate production and expand to new markets.',
+                link: 'https://x.com/mehul'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'Tech Fans Buying Mac Minis for Local Kimi K2.5 AI',
+                source: 'Twitter Trending',
+                time: '20 hours ago',
+                summary: 'A growing trend of enthusiasts purchasing Mac Minis and Studios specifically to run Kimi K2.5 AI models locally, away from cloud dependencies.',
+                fullText: 'The movement reflects increasing interest in running powerful AI models on personal hardware. Kimi K2.5 offers impressive capabilities that can run on Apple Silicon, giving users privacy and offline access.',
+                link: 'https://x.com/search?q=kimi+k2.5+mac'
+            },
+            {
+                type: 'tweet',
+                author: 'John Palmer',
+                handle: '@johnpalmer',
+                text: 'If you work at a software startup you basically need to join a FAANG or start a 1-man vibecoded business within the next 12 months before you lose your job.',
+                time: 'Today',
+                likes: 194,
+                retweets: 1,
+                link: 'https://x.com/johnpalmer/status/2016913129741979738'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'Podcaster Builds AI Agent in Two Hours to Run Podcasts',
+                source: 'Twitter Trending',
+                time: '2 hours ago',
+                summary: 'A podcaster demonstrated building a functional AI agent in just two hours that can autonomously handle podcast production tasks.',
+                fullText: 'The rapid development showcases how accessible AI agent creation has become. Using modern frameworks and MCP, even non-developers can build sophisticated automation.',
+                link: 'https://x.com/search?q=ai+agent+podcast'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: 'KnowBe4 Celebrates Decade of AI with 7 Active AI Agents',
+                source: 'Financial Content',
+                time: '7 hours ago',
+                summary: 'Cybersecurity platform KnowBe4 marks 10 years of AI innovation, now operating 7 active AI agents for human and agentic risk management.',
+                fullText: 'The company has evolved from basic AI security tools to sophisticated multi-agent systems that address both human error and AI-specific vulnerabilities in enterprise security.',
+                link: 'https://markets.financialcontent.com/stocks/article/bizwire-2026-1-29-knowbe4'
+            },
+            {
+                type: 'tweet',
+                author: 'Ronith',
+                handle: '@ronithhh',
+                text: 'When Iris learns something new, it leaves behind a memory breadcrumb\n\nUse simple controls to optionally refine the memory further',
+                time: 'Today',
+                likes: 4,
+                retweets: 0,
+                link: 'https://x.com/ronithhh/status/2016955277392904577'
+            },
+            // BITCOIN/CRYPTO
+            {
+                type: 'article',
+                category: 'Crypto',
+                headline: 'SEC & CFTC Launch Joint "Project Crypto" Initiative',
+                source: 'Bitcoin Magazine',
+                time: '1 hour ago',
+                summary: 'SEC and CFTC announce joint working group on Bitcoin & crypto regulation in their "most ambitious initiative in a generation."',
+                fullText: 'SEC Chair Paul Atkins and CFTC Chair Michael Selig announced the landmark collaboration. The initiative aims to provide clear regulatory frameworks and could open the $12.5 trillion 401k retirement market to crypto.',
+                link: 'https://x.com/BitcoinMagazine/status/2016955166700740695'
+            },
+            {
+                type: 'tweet',
+                author: 'Bitcoin Magazine',
+                handle: '@BitcoinMagazine',
+                text: 'JUST IN: 🇺🇸 SEC and CFTC will now work jointly on Bitcoin & crypto regulation in their "most ambitious initiative in a generation" 👀',
+                time: 'Today',
+                likes: 127,
+                retweets: 22,
+                link: 'https://x.com/BitcoinMagazine/status/2016955166700740695'
+            },
+            {
+                type: 'article',
+                category: 'Crypto',
+                headline: 'SEC Chair Paul Atkins: Ready to Open 401k Market to Crypto',
+                source: 'Twitter Trending',
+                time: '1 hour ago',
+                summary: 'SEC Chair Paul Atkins says now is the "right" time to open the $12.5 trillion 401k retirement market to cryptocurrency investments.',
+                fullText: 'Atkins announced regulators are "ready to provide clear crypto rules." An innovation exemption is coming in days, with a token taxonomy framework being finalized. The CLARITY Act is expected to pass early 2026.',
+                link: 'https://x.com/search?q=paul+atkins+401k'
+            },
+            // TECH/BUSINESS
+            {
+                type: 'tweet',
+                author: 'Farzad 🇮🇷',
+                handle: '@farzyness',
+                text: 'AI satellites in space are inevitable.',
+                time: 'Today',
+                likes: 20,
+                retweets: 1,
+                link: 'https://x.com/farzyness/status/2016954362422087902'
+            },
+            {
+                type: 'tweet',
+                author: 'Teslaconomics',
+                handle: '@Teslaconomics',
+                text: 'Bro… Elon\'s companies are all converging… 𝕏, xAI, Starlink, SpaceX… are all about to be under one roof. The SpaceX IPO is going to be bananas. 🔥',
+                time: 'Today',
+                likes: 5,
+                retweets: 2,
+                link: 'https://x.com/Teslaconomics/status/2016956872658735233'
+            },
+            {
+                type: 'tweet',
+                author: 'Whole Mars Catalog',
+                handle: '@wholemars',
+                text: 'A CyberSUV is in the works',
+                time: 'Today',
+                likes: 73,
+                retweets: 4,
+                link: 'https://x.com/wholemars/status/2016954390972944777'
+            },
+            {
+                type: 'tweet',
+                author: 'Sawyer Merritt',
+                handle: '@SawyerMerritt',
+                text: 'David just took two FSD Unsupervised rides in Austin in two different Model Ys. No chase/follow car for either 😎',
+                time: 'Today',
+                likes: 312,
+                retweets: 78,
+                link: 'https://x.com/SawyerMerritt'
+            },
+            {
+                type: 'article',
+                category: 'Business',
+                headline: 'American Airlines to Fly to Venezuela for First Time Since 2019',
+                source: 'Twitter Trending',
+                time: '2 hours ago',
+                summary: 'American Airlines announces plans to resume daily service to Venezuela after Trump ordered reopening of commercial airspace.',
+                fullText: 'American Airlines will become the first U.S. carrier to restore direct routes to Venezuela. The move follows an executive order reopening the airspace that had been closed since 2019.',
+                link: 'https://x.com/search?q=american+airlines+venezuela'
+            },
+            {
+                type: 'tweet',
+                author: 'Ray Dalio',
+                handle: '@RayDalio',
+                text: 'It is a classic financial move. Throughout history, rulers have run up debts that won\'t come due until long after their own reigns are over, leaving it to their successors to pay the bill. #principleoftheday',
+                time: 'Today',
+                likes: 1,
+                retweets: 1,
+                link: 'https://x.com/RayDalio/status/2016957342265319611'
+            },
+            {
+                type: 'tweet',
+                author: 'Noah Kagan',
+                handle: '@noahkagan',
+                text: 'I keep exploring what is AI-insensitive. \n\nMeaning no matter what VCs, researchers or ML experts come up with people will keep needing.\n\nFood, water, shelter, human connection, activities.\n\nWe found something that seems promising...',
+                time: 'Today',
+                likes: 3,
+                retweets: 0,
+                link: 'https://x.com/noahkagan/status/2016952792741531761'
+            },
+            // GEOPOLITICS
+            {
+                type: 'tweet',
+                author: 'Open Source Intel',
+                handle: '@Osint613',
+                text: 'The Trump administration is hosting senior defense and intelligence officials from Israel and Saudi Arabia for separate talks on Iran this week in Washington as U.S. President Donald Trump considers military strikes, sources tell Reuters.',
+                time: 'Today',
+                likes: 121,
+                retweets: 15,
+                link: 'https://x.com/Osint613/status/2016954709941092722'
+            },
+            {
+                type: 'tweet',
+                author: 'Open Source Intel',
+                handle: '@Osint613',
+                text: 'Trump: "And now we want Hamas to hold weapons no longer. Right?"\n\nWitkoff: "Right. They are going to give it up. They are going to give up the AK-47 rifles. Get it."\n\nTrump: "Many people said they would never disarm. It seems they are going to disarm"',
+                time: 'Today',
+                likes: 11,
+                retweets: 1,
+                link: 'https://x.com/Osint613/status/2016957152225558669'
+            },
+            {
+                type: 'tweet',
+                author: 'Open Source Intel',
+                handle: '@Osint613',
+                text: 'The Iranian Army: There will be no hesitation, and the response will be at the exact same moment.',
+                time: 'Today',
+                likes: 122,
+                retweets: 14,
+                link: 'https://x.com/Osint613/status/2016953785025810786'
+            },
+            // MORE TECH/MISC
+            {
+                type: 'tweet',
+                author: 'Daniel Sempere Pico',
+                handle: '@dansemperepico',
+                text: 'ClawdBot Battle of the Agents - Parallel vs Sub-Agents',
+                time: 'Today',
+                likes: 0,
+                retweets: 0,
+                link: 'https://x.com/dansemperepico/status/2016953453638267002'
+            },
+            {
+                type: 'article',
+                category: 'AI',
+                headline: '2026: AI Moves from Hype to Pragmatism',
+                source: 'TechCrunch',
+                time: '1 month ago',
+                summary: 'With MCP reducing friction of connecting agents to real systems, 2026 is likely the year agentic workflows move from demos to day-to-day practice.',
+                fullText: 'The Model Context Protocol has unlocked a new era of practical AI deployment. Companies are finally seeing real productivity gains as agents integrate seamlessly with existing enterprise systems.',
+                link: 'https://techcrunch.com/2026/01/02/in-2026-ai-will-move-from-hype-to-pragmatism/'
+            },
+            {
+                type: 'tweet',
+                author: 'Maxim Leyzerovich',
+                handle: '@round',
+                text: 'we have about 1,000 days',
+                time: 'Nov 2025',
+                likes: 30,
+                retweets: 1,
+                link: 'https://x.com/round/status/1989897799551357107'
+            },
+            {
+                type: 'tweet',
+                author: 'Diana S. Fleischman',
+                handle: '@sentientist',
+                text: 'I love Indian immigrants and the word "retarded". I am politically unhoused.',
+                time: 'Today',
+                likes: 4,
+                retweets: 0,
+                link: 'https://x.com/sentientist/status/2016957015588032787'
+            },
+            {
+                type: 'article',
+                category: 'Business',
+                headline: 'Is School Worse for Your Kids Than Social Media?',
+                source: 'Marginal Revolution',
+                time: 'Today',
+                summary: 'Tyler Cowen shares provocative research questioning conventional wisdom about screen time and youth mental health.',
+                fullText: 'The piece challenges the narrative that social media is the primary driver of youth mental health issues, suggesting school-related stress may play a larger role than commonly acknowledged.',
+                link: 'https://marginalrevolution.com'
+            },
+            {
+                type: 'tweet',
+                author: 'Michael Shermer',
+                handle: '@michaelshermer',
+                text: 'Excerpt from my Truth book in the @washingtonpost on UFOs/UAPs',
+                time: 'Today',
+                likes: 2,
+                retweets: 0,
+                link: 'https://x.com/michaelshermer/status/2016952904549347374'
+            }
+        ];
+
+        let currentIndex = 0;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+        
+        const container = document.getElementById('cardContainer');
+        const doneScreen = document.getElementById('doneScreen');
+        const currentEl = document.getElementById('current');
+        const totalEl = document.getElementById('total');
+        const leftIndicator = document.querySelector('.swipe-indicator.left');
+        const rightIndicator = document.querySelector('.swipe-indicator.right');
+        
+        totalEl.textContent = items.length;
+        
+        function createCard(item) {
+            const card = document.createElement('div');
+            card.className = 'card' + (item.type === 'tweet' ? ' tweet-card' : '');
+            
+            if (item.type === 'tweet') {
+                const initial = item.author.charAt(0).toUpperCase();
+                card.innerHTML = `
+                    <div class="card-content">
+                        <div class="tweet-header">
+                            <div class="tweet-avatar">${initial}</div>
+                            <div class="tweet-author">
+                                <div class="tweet-name">${item.author}</div>
+                                <div class="tweet-handle">${item.handle}</div>
+                            </div>
+                            <div class="tweet-x-logo">𝕏</div>
+                        </div>
+                        <div class="tweet-text">${item.text}</div>
+                        <div class="tweet-time">${item.time}</div>
+                        <div class="tweet-stats">
+                            <div class="tweet-stat">❤️ ${item.likes.toLocaleString()}</div>
+                            <div class="tweet-stat">🔁 ${item.retweets.toLocaleString()}</div>
+                        </div>
+                        <a href="${item.link}" target="_blank" class="tweet-link">View on 𝕏</a>
+                    </div>
+                `;
+            } else {
+                const categoryClass = item.category.toLowerCase();
+                card.innerHTML = `
+                    <div class="card-content">
+                        <span class="category ${categoryClass}">${item.category}</span>
+                        <h1 class="headline">${item.headline}</h1>
+                        <div class="meta">
+                            <span>${item.source}</span>
+                            <span>•</span>
+                            <span>${item.time}</span>
+                        </div>
+                        <p class="summary">${item.summary}</p>
+                        <p class="full-text">${item.fullText}</p>
+                        <a href="${item.link}" target="_blank" class="link">Read more →</a>
+                    </div>
+                `;
+            }
+            
+            return card;
+        }
+        
+        function renderCard() {
+            container.innerHTML = '';
+            if (currentIndex < items.length) {
+                const card = createCard(items[currentIndex]);
+                container.appendChild(card);
+                currentEl.textContent = currentIndex + 1;
+                setupDrag(card);
+            } else {
+                container.style.display = 'none';
+                doneScreen.classList.add('active');
+            }
+        }
+        
+        function setupDrag(card) {
+            const handleStart = (clientX) => {
+                isDragging = true;
+                startX = clientX;
+                card.classList.add('dragging');
+            };
+            
+            const handleMove = (clientX) => {
+                if (!isDragging) return;
+                currentX = clientX - startX;
+                card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.03}deg)`;
+                
+                if (currentX < -50) {
+                    leftIndicator.classList.add('visible');
+                    rightIndicator.classList.remove('visible');
+                } else if (currentX > 50) {
+                    rightIndicator.classList.add('visible');
+                    leftIndicator.classList.remove('visible');
+                } else {
+                    leftIndicator.classList.remove('visible');
+                    rightIndicator.classList.remove('visible');
+                }
+            };
+            
+            const handleEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                card.classList.remove('dragging');
+                leftIndicator.classList.remove('visible');
+                rightIndicator.classList.remove('visible');
+                
+                if (currentX > 100) {
+                    // Swipe right - done/next
+                    card.style.transition = 'transform 0.3s ease-out';
+                    card.style.transform = `translateX(${window.innerWidth}px) rotate(30deg)`;
+                    setTimeout(() => {
+                        currentIndex++;
+                        renderCard();
+                    }, 200);
+                } else if (currentX < -100) {
+                    // Swipe left - undo/go back
+                    if (currentIndex > 0) {
+                        card.style.transition = 'transform 0.3s ease-out';
+                        card.style.transform = `translateX(${-window.innerWidth}px) rotate(-30deg)`;
+                        setTimeout(() => {
+                            currentIndex--;
+                            renderCard();
+                        }, 200);
+                    } else {
+                        card.style.transition = 'transform 0.3s ease-out';
+                        card.style.transform = '';
+                    }
+                } else {
+                    card.style.transition = 'transform 0.3s ease-out';
+                    card.style.transform = '';
+                }
+                currentX = 0;
+            };
+            
+            // Touch events
+            card.addEventListener('touchstart', (e) => handleStart(e.touches[0].clientX));
+            card.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                handleMove(e.touches[0].clientX);
+            });
+            card.addEventListener('touchend', handleEnd);
+            
+            // Mouse events
+            card.addEventListener('mousedown', (e) => handleStart(e.clientX));
+            document.addEventListener('mousemove', (e) => handleMove(e.clientX));
+            document.addEventListener('mouseup', handleEnd);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                if (currentIndex < items.length) {
+                    currentIndex++;
+                    renderCard();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    renderCard();
+                }
+            }
+        });
+        
+        // Initial render
+        renderCard();
+    </script>
+</body>
+</html>

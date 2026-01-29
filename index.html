@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>⚡️ Daily Intelligence Digest</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -13,6 +13,7 @@
             min-height: 100vh;
             color: #e0e0e0;
             overflow: hidden;
+            touch-action: pan-y;
         }
         
         .header {
@@ -40,34 +41,54 @@
         
         .progress { font-size: 14px; color: #888; font-weight: 500; }
         
-        .container {
+        .swipe-zone {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 120px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            padding: 60px 10px 140px;
-        }
-        
-        .card-stack {
-            position: relative;
-            width: 100%;
-            max-width: 420px;
-            height: calc(100vh - 200px);
+            padding: 10px;
+            overflow: hidden;
         }
         
         .card {
-            position: absolute;
             width: 100%;
+            max-width: 400px;
             height: 100%;
             background: linear-gradient(145deg, #1e1e2e, #252540);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
+            touch-action: pan-x;
+            will-change: transform;
+            transition: transform 0.1s ease-out;
         }
         
-        .card.hidden { display: none; }
+        .card.animating {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.15s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .swipe-left { left: 15px; background: rgba(245, 158, 11, 0.95); color: #1a1a1a; }
+        .swipe-right { right: 15px; background: rgba(239, 68, 68, 0.95); color: white; }
         
         .card-header {
             padding: 16px;
@@ -92,22 +113,8 @@
         .cat-business { background: linear-gradient(90deg, #f43f5e, #fb7185); color: white; }
         .cat-twitter { background: linear-gradient(90deg, #1d9bf0, #60a5fa); color: white; }
         
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 8px;
-            color: #fff;
-        }
-        
-        .card-meta {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #888;
-        }
-        
+        .card-title { font-size: 18px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; color: #fff; }
+        .card-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; }
         .card-source { font-weight: 600; color: #00d4ff; }
         
         .card-content {
@@ -115,112 +122,51 @@
             overflow-y: auto;
             padding: 16px;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
         
-        .card-summary {
-            font-size: 15px;
-            line-height: 1.5;
-            color: #c0c0c0;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .card-full-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #a0a0a0;
-        }
-        
+        .card-summary { font-size: 15px; line-height: 1.5; color: #c0c0c0; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .card-full-text { font-size: 14px; line-height: 1.6; color: #a0a0a0; }
         .card-full-text p { margin-bottom: 12px; }
-        
-        .card-link {
-            display: inline-block;
-            margin-top: 16px;
-            padding: 10px 16px;
-            background: rgba(0,212,255,0.1);
-            border: 1px solid rgba(0,212,255,0.3);
-            border-radius: 10px;
-            color: #00d4ff;
-            text-decoration: none;
-            font-size: 13px;
-        }
+        .card-link { display: inline-block; margin-top: 16px; padding: 10px 16px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 10px; color: #00d4ff; text-decoration: none; font-size: 13px; }
         
         .footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 15px 20px 30px;
+            padding: 12px 20px 25px;
             background: rgba(10, 10, 15, 0.98);
             backdrop-filter: blur(10px);
             border-top: 1px solid rgba(255,255,255,0.1);
         }
         
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 10px;
-        }
+        .nav-buttons { display: flex; justify-content: center; gap: 30px; margin-bottom: 8px; }
         
         .nav-btn {
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            transition: transform 0.2s;
-            -webkit-tap-highlight-color: transparent;
+            font-size: 26px;
+            transition: transform 0.15s;
         }
         
         .nav-btn:active { transform: scale(0.9); }
+        .btn-save { background: linear-gradient(145deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+        .btn-dismiss { background: linear-gradient(145deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .nav-hint { text-align: center; font-size: 11px; color: #555; }
         
-        .btn-save {
-            background: linear-gradient(145deg, #f59e0b, #d97706);
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-        }
-        
-        .btn-dismiss {
-            background: linear-gradient(145deg, #ef4444, #dc2626);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-        }
-        
-        .nav-hint {
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        .empty-state h2 {
-            font-size: 24px;
-            margin-bottom: 12px;
-            background: linear-gradient(90deg, #00d4ff, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-state h2 { font-size: 24px; margin-bottom: 12px; background: linear-gradient(90deg, #00d4ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .empty-state p { color: #888; margin-bottom: 20px; }
-        
-        .saved-section { margin-top: 20px; text-align: left; }
+        .saved-section { margin-top: 20px; text-align: left; max-height: 300px; overflow-y: auto; }
         .saved-section h3 { font-size: 14px; color: #f59e0b; margin-bottom: 12px; text-align: center; }
-        
-        .saved-item {
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
+        .saved-item { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -229,21 +175,19 @@
         <div class="progress"><span id="current">1</span>/<span id="total">30</span></div>
     </div>
     
-    <div class="container">
-        <div class="card-stack" id="cardStack"></div>
-    </div>
+    <div class="swipe-zone" id="swipeZone"></div>
     
     <div class="footer">
         <div class="nav-buttons">
             <button class="nav-btn btn-save" onclick="saveCard()">📌</button>
             <button class="nav-btn btn-dismiss" onclick="dismissCard()">✕</button>
         </div>
-        <div class="nav-hint">📌 Save for later · ✕ Next article</div>
+        <div class="nav-hint">← Swipe or tap buttons →</div>
     </div>
     
     <script>
         const newsItems = [
-            {id:1,category:'ai',title:'Chinese AI Race Heats Up: Alibaba, Moonshot, Baidu Release New Models',source:'CNBC',time:'Jan 28, 2026',summary:'Chinese companies are accelerating AI model rollouts. Moonshot AI\'s Kimi K2.5 claims to outperform OpenAI, Anthropic, and Google.',fullText:'<p>Chinese companies are accelerating the rollout of new AI models as competition with U.S.-based rivals intensifies.</p><p>Moonshot AI revealed Kimi K2.5 with video-generation and agentic capabilities that outperformed leading U.S. models.</p><p>Alibaba\'s Qwen3-Max-Thinking outperformed rivals on "Humanity\'s Last Exam" benchmark.</p><p>Google DeepMind CEO says China\'s AI models may be just "months" behind the U.S.</p>',link:'https://www.cnbc.com/2026/01/28/chinese-tech-companies-accelerate-ai-model-rollouts.html'},
+            {id:1,category:'ai',title:'Chinese AI Race Heats Up: Alibaba, Moonshot, Baidu Release New Models',source:'CNBC',time:'Jan 28, 2026',summary:'Chinese companies are accelerating AI model rollouts. Moonshot AI\'s Kimi K2.5 claims to outperform OpenAI, Anthropic, and Google.',fullText:'<p>Chinese companies are accelerating the rollout of new AI models as competition with U.S.-based rivals intensifies.</p><p>Moonshot AI revealed Kimi K2.5 with video-generation and agentic capabilities that outperformed leading U.S. models.</p><p>Alibaba\'s Qwen3-Max-Thinking outperformed rivals on "Humanity\'s Last Exam" benchmark.</p><p>Google DeepMind CEO says China\'s AI models may be just "months" behind the U.S.</p>',link:'https://www.cnbc.com/'},
             {id:2,category:'ai',title:'Sam Altman Eyes Biometric Social Network — World Token Jumps 27%',source:'CoinDesk',time:'Jan 28, 2026',summary:'OpenAI reportedly planning to use Worldcoin\'s biometric verification to fight bots online.',fullText:'<p>WLD token surged 27% after reports that OpenAI plans to use Worldcoin to fight bots.</p><p>The integration would use iris scans to verify users are real humans.</p><p>This could become the foundation for a new social network where every participant is verified as human.</p>',link:'https://www.coindesk.com/'},
             {id:3,category:'ai',title:'Ethereum to Roll Out New AI Agents Standard Soon',source:'CoinDesk',time:'Jan 28, 2026',summary:'Ethereum Foundation preparing new standard for AI agents operating on-chain.',fullText:'<p>The new standard will define how AI agents can securely manage wallets and execute transactions.</p><p>Optimism approved OP token buyback plan tied to superchain revenue.</p><p>EF assembling post-quantum security team.</p>',link:'https://www.coindesk.com/'},
             {id:4,category:'ai',title:'Meta & Microsoft: $115-135B AI Spending Planned',source:'CoinDesk',time:'Jan 28, 2026',summary:'Meta\'s Q4 reveals massive AI infrastructure plans. Bitcoin miners could benefit.',fullText:'<p>Meta capital spending for 2026 projected at $115-135 billion.</p><p>Both companies racing to secure GPU capacity and energy resources.</p><p>Bitcoin miners could benefit as their power infrastructure makes them attractive AI partners.</p>',link:'https://www.coindesk.com/'},
@@ -251,7 +195,7 @@
             {id:6,category:'bitcoin',title:'Tesla Holds 11,509 BTC — Books $239M Loss in Q4',source:'CoinDesk',time:'Jan 28, 2026',summary:'Tesla made no changes to Bitcoin holdings. Stack worth ~$1B at current prices.',fullText:'<p>Tesla\'s 11,509 BTC stack is worth about $1 billion at BTC\'s current price near $89,000.</p><p>Company booked $239M digital asset loss under new fair value accounting rules.</p>',link:'https://www.coindesk.com/'},
             {id:7,category:'bitcoin',title:'Gold Races to $5,400 Record — Bitcoin Stalls',source:'CoinDesk',time:'Jan 28, 2026',summary:'Gold hits new highs while Bitcoin remains range-bound near $89K.',fullText:'<p>Gold surged above $5,400 following Fed Chair Powell\'s remarks.</p><p>Bitcoin has been trading more like a risk asset than digital gold.</p>',link:'https://www.coindesk.com/'},
             {id:8,category:'bitcoin',title:'White House to Meet Crypto Execs on Market Structure Bill',source:'CoinDesk',time:'Jan 28, 2026',summary:'Vote delayed over stablecoin regulation disputes.',fullText:'<p>White House convening crypto and banking executives.</p><p>Bill aims to provide regulatory clarity for digital assets.</p>',link:'https://www.coindesk.com/'},
-            {id:9,category:'bitcoin',title:'Buy Bitcoin BEFORE Apple Announces It',source:'Twitter @SimplyBitcoin',time:'Jan 28, 2026',summary:'Speculation mounts that Apple may be preparing a Bitcoin announcement.',fullText:'<p>The Bitcoin community is buzzing with speculation about Apple adding BTC to treasury.</p>',link:'https://twitter.com/SimplyBitcoin'},
+            {id:9,category:'bitcoin',title:'Buy Bitcoin BEFORE Apple Announces It',source:'Twitter @SimplyBitcoin',time:'Jan 28, 2026',summary:'Speculation mounts that Apple may be preparing a Bitcoin announcement.',fullText:'<p>The Bitcoin community is buzzing with speculation about Apple adding BTC to treasury.</p>',link:'https://twitter.com/'},
             {id:10,category:'bitcoin',title:'Warren Buffett: "Would Not Buy All 21M BTC for $25"',source:'Twitter',time:'Jan 28, 2026',summary:'Oracle of Omaha doubles down on Bitcoin skepticism.',fullText:'<p>Buffett reiterated his long-standing skepticism of Bitcoin.</p><p>Bitcoin advocates responded: "Good, more for the people who need it."</p>',link:'https://twitter.com/'},
             {id:11,category:'bitcoin',title:'Fed Holds Rates Steady — Rate Cut Bets Vanish',source:'CoinDesk',time:'Jan 28, 2026',summary:'Early rate cut expectations evaporated. Bitcoin stalls.',fullText:'<p>Federal Reserve held rates steady.</p><p>Higher-for-longer rates reduce appeal of non-yielding assets like Bitcoin.</p>',link:'https://www.coindesk.com/'},
             {id:12,category:'tech',title:'SpaceX Eyes $1.5 TRILLION IPO — Mid-June Target',source:'The Guardian',time:'Jan 28, 2026',summary:'Musk targets symbolic date coinciding with planetary alignment and his birthday.',fullText:'<p>SpaceX seeking to raise $50 billion at $1.5 trillion valuation.</p><p>Would be bigger than Saudi Aramco\'s $29B IPO in 2019.</p><p>Bank of America, JP Morgan, Goldman Sachs considered for leading roles.</p>',link:'https://www.theguardian.com/'},
@@ -267,7 +211,7 @@
             {id:22,category:'business',title:'UK Government: Banks Must Stop Blocking Crypto Firms',source:'CoinDesk',time:'Jan 28, 2026',summary:'Push to become global digital asset hub.',fullText:'<p>UK officials say banks must treat crypto businesses fairly.</p><p>Many legitimate crypto companies struggled to maintain banking relationships.</p>',link:'https://www.coindesk.com/'},
             {id:23,category:'markets',title:'Paxos Gold Token Sees Record Inflows',source:'CoinDesk',time:'Jan 28, 2026',summary:'Crypto investors turn to tokenized gold as BTC trades like risk asset.',fullText:'<p>PAXG has seen record inflows amid market uncertainty.</p><p>Highlights debate about Bitcoin\'s role as safe haven vs speculative asset.</p>',link:'https://www.coindesk.com/'},
             {id:24,category:'twitter',title:'Hoboken: 9 Years Without a Fatal Crash',source:'Steven Pinker RT',time:'Jan 28, 2026',summary:'New Jersey city achieves remarkable safety record through infrastructure.',fullText:'<p>Success through reduced speed limits, protected bike lanes, redesigned intersections.</p><p>Become model for Vision Zero cities.</p>',link:'https://twitter.com/'},
-            {id:25,category:'twitter',title:'JD Vance vs Tammy Duckworth: "Forest Gump vs Isaac Newton"',source:'Twitter @JDVance',time:'Jan 28, 2026',summary:'VP\'s spicy take on Rubio hearing goes viral with 82K+ likes.',fullText:'<p>Elon Musk responded with 😂.</p><p>Highlights combative tone of current political climate.</p>',link:'https://twitter.com/JDVance'},
+            {id:25,category:'twitter',title:'JD Vance vs Tammy Duckworth: "Forest Gump vs Isaac Newton"',source:'Twitter @JDVance',time:'Jan 28, 2026',summary:'VP\'s spicy take on Rubio hearing goes viral with 82K+ likes.',fullText:'<p>Elon Musk responded with 😂.</p><p>Highlights combative tone of current political climate.</p>',link:'https://twitter.com/'},
             {id:26,category:'twitter',title:'Passive Investing Cult: "Like Betting on a Fixed Game"',source:'Twitter',time:'Jan 28, 2026',summary:'Contrarian take on index fund investing gains traction.',fullText:'<p>Thread sparked debate about index funds vs active management.</p><p>S&P 500 increasingly dominated by handful of mega-cap tech stocks.</p>',link:'https://twitter.com/'},
             {id:27,category:'business',title:'Wall Street Pushes Back on Tokenized Securities Exemptions',source:'CoinDesk',time:'Jan 28, 2026',summary:'Banks press SEC to apply traditional rules to blockchain trading.',fullText:'<p>Banks worried about unlevel playing field with DeFi.</p><p>Argue different rules could create regulatory arbitrage.</p>',link:'https://www.coindesk.com/'},
             {id:28,category:'business',title:'Strive Raises $225M — Buys More Bitcoin',source:'CoinDesk',time:'Jan 28, 2026',summary:'Stock offering oversubscribed, upsized from $150M.',fullText:'<p>Proceeds to pay off loans and acquire more Bitcoin.</p><p>Suggests continued institutional appetite for BTC exposure.</p>',link:'https://www.coindesk.com/'},
@@ -277,10 +221,11 @@
         
         let currentIndex = 0;
         let savedItems = [];
+        let startX = 0, currentX = 0, isDragging = false;
         
         function renderCards() {
-            const stack = document.getElementById('cardStack');
-            stack.innerHTML = '';
+            const zone = document.getElementById('swipeZone');
+            zone.innerHTML = '';
             
             if (currentIndex >= newsItems.length) {
                 renderEmptyState();
@@ -290,7 +235,10 @@
             const item = newsItems[currentIndex];
             const card = document.createElement('div');
             card.className = 'card';
+            card.id = 'currentCard';
             card.innerHTML = `
+                <div class="swipe-indicator swipe-left" id="saveIndicator">📌 SAVE</div>
+                <div class="swipe-indicator swipe-right" id="skipIndicator">✕ SKIP</div>
                 <div class="card-header">
                     <span class="card-category cat-${item.category}">${item.category}</span>
                     <h2 class="card-title">${item.title}</h2>
@@ -300,18 +248,86 @@
                         <span>${item.time}</span>
                     </div>
                 </div>
-                <div class="card-content">
+                <div class="card-content" id="cardContent">
                     <p class="card-summary">${item.summary}</p>
                     <div class="card-full-text">${item.fullText}</div>
                     <a href="${item.link}" target="_blank" class="card-link">Read Original →</a>
                 </div>
             `;
-            stack.appendChild(card);
+            zone.appendChild(card);
             updateProgress();
+            setupSwipe(card);
+        }
+        
+        function setupSwipe(card) {
+            const content = document.getElementById('cardContent');
+            
+            card.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.card-content') && content.scrollHeight > content.clientHeight) {
+                    return;
+                }
+                startX = e.touches[0].clientX;
+                isDragging = true;
+                card.classList.remove('animating');
+            }, { passive: true });
+            
+            card.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentX = e.touches[0].clientX - startX;
+                card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.03}deg)`;
+                
+                const saveInd = document.getElementById('saveIndicator');
+                const skipInd = document.getElementById('skipIndicator');
+                if (currentX < -30) {
+                    saveInd.style.opacity = Math.min(Math.abs(currentX) / 80, 1);
+                    skipInd.style.opacity = 0;
+                } else if (currentX > 30) {
+                    skipInd.style.opacity = Math.min(currentX / 80, 1);
+                    saveInd.style.opacity = 0;
+                } else {
+                    saveInd.style.opacity = 0;
+                    skipInd.style.opacity = 0;
+                }
+            }, { passive: true });
+            
+            card.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                if (currentX < -80) {
+                    animateOut('left');
+                } else if (currentX > 80) {
+                    animateOut('right');
+                } else {
+                    card.classList.add('animating');
+                    card.style.transform = '';
+                    document.getElementById('saveIndicator').style.opacity = 0;
+                    document.getElementById('skipIndicator').style.opacity = 0;
+                }
+                currentX = 0;
+            });
+        }
+        
+        function animateOut(direction) {
+            const card = document.getElementById('currentCard');
+            if (!card) return;
+            
+            card.classList.add('animating');
+            const xOut = direction === 'left' ? -400 : 400;
+            card.style.transform = `translateX(${xOut}px) rotate(${xOut * 0.05}deg)`;
+            card.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (direction === 'left') {
+                    savedItems.push(newsItems[currentIndex]);
+                }
+                currentIndex++;
+                renderCards();
+            }, 250);
         }
         
         function renderEmptyState() {
-            const stack = document.getElementById('cardStack');
+            const zone = document.getElementById('swipeZone');
             let savedHtml = savedItems.length > 0 ? `
                 <div class="saved-section">
                     <h3>📌 Saved (${savedItems.length})</h3>
@@ -319,7 +335,7 @@
                 </div>
             ` : '';
             
-            stack.innerHTML = `
+            zone.innerHTML = `
                 <div class="empty-state">
                     <h2>All caught up! 🎉</h2>
                     <p>You've read all ${newsItems.length} stories</p>
@@ -333,20 +349,8 @@
             document.getElementById('total').textContent = newsItems.length;
         }
         
-        function saveCard() {
-            if (currentIndex < newsItems.length) {
-                savedItems.push(newsItems[currentIndex]);
-                currentIndex++;
-                renderCards();
-            }
-        }
-        
-        function dismissCard() {
-            if (currentIndex < newsItems.length) {
-                currentIndex++;
-                renderCards();
-            }
-        }
+        function saveCard() { animateOut('left'); }
+        function dismissCard() { animateOut('right'); }
         
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') saveCard();
